@@ -28,8 +28,10 @@ namespace _Saga.Code.UI
         
         private void ShowCategory(ItemCategory category)
         {
-            foreach (Transform child in inventoryScrollContent) Destroy(child.gameObject);
-
+            foreach (Transform child in inventoryScrollContent)
+            {
+                Destroy(child.gameObject);
+            }
             var items = InventoryComponent.Instance.GetItemsByCategory(category);
             foreach (var item in items)
             {
