@@ -1,6 +1,6 @@
 An survival game set in Iceland during the Saga Age.
 
-Players will explore, gather resources, manage a settlement and more while following stories inspired by the Icelandic Sagas.
+Players will explore, gather resources, manage a settlement and more while following stories inspired by the Sagas of Icelanders.
 
 ![image](https://github.com/user-attachments/assets/caa82414-9854-4f3b-a4c8-ff6c77f94450)
 
