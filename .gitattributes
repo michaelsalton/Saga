@@ -1,0 +1,122 @@
+# Auto-normalize line endings on commit (LF in repo, native in workdir)
+* text=auto eol=lf
+
+# Unity text-based assets — force LF, mark as text so diffs work
+*.cs            text diff=csharp
+*.shader        text
+*.cginc         text
+*.hlsl          text
+*.compute       text
+*.uss           text
+*.uxml          text
+*.json          text
+*.xml           text
+*.yaml          text
+*.yml           text
+*.md            text
+*.txt           text
+*.asmdef        text
+*.asmref        text
+*.inputactions  text
+
+# Unity YAML assets — treat as text but disable diffs (they're huge and noisy)
+*.meta          text merge=unityyamlmerge eol=lf
+*.unity         text merge=unityyamlmerge eol=lf
+*.prefab        text merge=unityyamlmerge eol=lf
+*.asset         text merge=unityyamlmerge eol=lf
+*.mat           text merge=unityyamlmerge eol=lf
+*.anim          text merge=unityyamlmerge eol=lf
+*.controller    text merge=unityyamlmerge eol=lf
+*.overrideController text merge=unityyamlmerge eol=lf
+*.physicMaterial text merge=unityyamlmerge eol=lf
+*.physicsMaterial2D text merge=unityyamlmerge eol=lf
+*.playable      text merge=unityyamlmerge eol=lf
+*.mask          text merge=unityyamlmerge eol=lf
+*.brush         text merge=unityyamlmerge eol=lf
+*.flare         text merge=unityyamlmerge eol=lf
+*.fontsettings  text merge=unityyamlmerge eol=lf
+*.guiskin       text merge=unityyamlmerge eol=lf
+*.giparams      text merge=unityyamlmerge eol=lf
+*.renderTexture text merge=unityyamlmerge eol=lf
+*.spriteatlas   text merge=unityyamlmerge eol=lf
+*.terrainlayer  text merge=unityyamlmerge eol=lf
+*.mixer         text merge=unityyamlmerge eol=lf
+*.shadervariants text merge=unityyamlmerge eol=lf
+*.preset        text merge=unityyamlmerge eol=lf
+*.lighting      text merge=unityyamlmerge eol=lf
+
+# Binaries — LFS recommended
+*.psd           filter=lfs diff=lfs merge=lfs -text
+*.ai            filter=lfs diff=lfs merge=lfs -text
+*.tif           filter=lfs diff=lfs merge=lfs -text
+*.tiff          filter=lfs diff=lfs merge=lfs -text
+*.png           filter=lfs diff=lfs merge=lfs -text
+*.jpg           filter=lfs diff=lfs merge=lfs -text
+*.jpeg          filter=lfs diff=lfs merge=lfs -text
+*.gif           filter=lfs diff=lfs merge=lfs -text
+*.exr           filter=lfs diff=lfs merge=lfs -text
+*.hdr           filter=lfs diff=lfs merge=lfs -text
+*.tga           filter=lfs diff=lfs merge=lfs -text
+*.fbx           filter=lfs diff=lfs merge=lfs -text
+*.obj           filter=lfs diff=lfs merge=lfs -text
+*.blend         filter=lfs diff=lfs merge=lfs -text
+*.dae           filter=lfs diff=lfs merge=lfs -text
+*.3ds           filter=lfs diff=lfs merge=lfs -text
+*.max           filter=lfs diff=lfs merge=lfs -text
+*.wav           filter=lfs diff=lfs merge=lfs -text
+*.mp3           filter=lfs diff=lfs merge=lfs -text
+*.ogg           filter=lfs diff=lfs merge=lfs -text
+*.aif           filter=lfs diff=lfs merge=lfs -text
+*.aiff          filter=lfs diff=lfs merge=lfs -text
+*.mp4           filter=lfs diff=lfs merge=lfs -text
+*.mov           filter=lfs diff=lfs merge=lfs -text
+*.unitypackage  filter=lfs diff=lfs merge=lfs -text
+*.dll           filter=lfs diff=lfs merge=lfs -text
+*.so            filter=lfs diff=lfs merge=lfs -text
+*.dylib         filter=lfs diff=lfs merge=lfs -text
+*.zip           filter=lfs diff=lfs merge=lfs -text
+
+# Formats this project actually contains that the block above missed
+*.bytes         filter=lfs diff=lfs merge=lfs -text
+*.ttf           filter=lfs diff=lfs merge=lfs -text
+*.otf           filter=lfs diff=lfs merge=lfs -text
+*.pdf           filter=lfs diff=lfs merge=lfs -text
+*.xcf           filter=lfs diff=lfs merge=lfs -text
+*.blend1        filter=lfs diff=lfs merge=lfs -text
+
+# More image formats
+*.psb           filter=lfs diff=lfs merge=lfs -text
+*.bmp           filter=lfs diff=lfs merge=lfs -text
+*.dds           filter=lfs diff=lfs merge=lfs -text
+*.ico           filter=lfs diff=lfs merge=lfs -text
+*.webp          filter=lfs diff=lfs merge=lfs -text
+*.sbsar         filter=lfs diff=lfs merge=lfs -text
+
+# More audio / video
+*.flac          filter=lfs diff=lfs merge=lfs -text
+*.m4a           filter=lfs diff=lfs merge=lfs -text
+*.aac           filter=lfs diff=lfs merge=lfs -text
+*.webm          filter=lfs diff=lfs merge=lfs -text
+*.avi           filter=lfs diff=lfs merge=lfs -text
+
+# More DCC / model formats
+*.ma            filter=lfs diff=lfs merge=lfs -text
+*.mb            filter=lfs diff=lfs merge=lfs -text
+*.c4d           filter=lfs diff=lfs merge=lfs -text
+*.abc           filter=lfs diff=lfs merge=lfs -text
+*.glb           filter=lfs diff=lfs merge=lfs -text
+
+# More native libs / archives
+*.a             filter=lfs diff=lfs merge=lfs -text
+*.bundle        filter=lfs diff=lfs merge=lfs -text
+*.aar           filter=lfs diff=lfs merge=lfs -text
+*.jar           filter=lfs diff=lfs merge=lfs -text
+*.7z            filter=lfs diff=lfs merge=lfs -text
+*.rar           filter=lfs diff=lfs merge=lfs -text
+
+# BINARY .asset overrides -- MUST stay last. The *.asset rule above marks every
+# .asset as text with eol=lf, and LF normalisation rewrites 0D0A byte pairs inside
+# a binary file, corrupting it. Unity writes these two in a binary format no matter
+# what m_SerializationMode says. A later rule wins, so these must sit below it.
+LightingData.asset               filter=lfs diff=lfs merge=lfs -text
+ProjectSettings/XRSettings.asset -text

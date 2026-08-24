@@ -1,0 +1,13 @@
+# Blender 5.0.1 MTL File: 'None'
+# www.blender.org
+
+newmtl Motel
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/msalt/Downloads/motel-road-trip/source/motel/Motel_D.png
+map_Ns C:/Users/msalt/Downloads/motel-road-trip/source/motel/Motel_R.png
+map_Ke C:/Users/msalt/Downloads/motel-road-trip/source/motel/Motel_E.png
+map_d C:/Users/msalt/Downloads/motel-road-trip/source/motel/Motel_D.png
+map_Bump -bm 1.000000 C:/Users/msalt/Downloads/motel-road-trip/source/motel/Motel_N.png

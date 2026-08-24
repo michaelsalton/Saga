@@ -1,0 +1,6 @@
+#ifndef SAGA_PBR_INCLUDED
+#define SAGA_PBR_INCLUDED
+
+#define SAGA_DIELECTRIC_F0 0.04h
+
+#endif
