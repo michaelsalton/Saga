@@ -1,0 +1,25 @@
+{
+    "name": "Saga.Rendering.Cinemachine",
+    "rootNamespace": "Saga.Rendering",
+    "references": [
+        "Saga.Rendering",
+        "Unity.Cinemachine"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "SAGA_CINEMACHINE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "3.0.0",
+            "define": "SAGA_CINEMACHINE"
+        }
+    ],
+    "noEngineReferences": false
+}
