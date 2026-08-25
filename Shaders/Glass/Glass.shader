@@ -50,7 +50,7 @@ Shader "Saga/Glass"
         Pass
         {
             Name "GlassForward"
-            Tags { "LightMode"="UniversalForward" }
+            Tags { "LightMode"="SagaGlass" }
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
             ZTest LEqual
@@ -62,7 +62,7 @@ Shader "Saga/Glass"
             #pragma vertex Vert
             #pragma fragment Frag
 
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassInput.hlsl"        // CBUFFER, textures, opaque + depth texture declarations
+            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassInput.hlsl"        // CBUFFER, textures, scene colour + depth texture declarations
             #include "Packages/com.saltbox.saga/Shaders/Glass/GlassSurface.hlsl"      // shading normal, incl. the procedural waviness
             #include "Packages/com.saltbox.saga/Shaders/Glass/GlassAbsorption.hlsl"   // Beer-Lambert tint over the slab chord
             #include "Packages/com.saltbox.saga/Shaders/Glass/GlassRefraction.hlsl"   // screen-space refraction with a foreground clamp

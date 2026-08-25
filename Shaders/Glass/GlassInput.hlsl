@@ -3,7 +3,6 @@
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
 
 #include "Packages/com.saltbox.saga/ShaderLibrary/Depth.hlsl"
 
@@ -46,5 +45,11 @@ CBUFFER_END
 
 TEXTURE2D(_NormalMap);
 SAMPLER(sampler_NormalMap);
+
+// The camera colour AFTER water, grass and the outline have drawn, published by GlassPass as a global.
+// Deliberately not _CameraOpaqueTexture: URP takes that copy before the transparent queue, so none of the
+// three is in it. Outside UnityPerMaterial because it is a global, not a material property.
+TEXTURE2D_X(_SagaSceneColor);
+SAMPLER(sampler_SagaSceneColor);
 
 #endif
