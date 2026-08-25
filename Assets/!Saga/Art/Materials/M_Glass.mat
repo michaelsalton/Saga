@@ -141,7 +141,7 @@ Material:
     - _ReflectBandSoftness: 1
     - _ReflectBands: 5
     - _ReflectMax: 0.5
-    - _ReflectMin: 0.06
+    - _ReflectMin: 0.155
     - _RefractionDistortion: 0
     - _RefractionEdgeFade: 0.1131
     - _Relief: 0

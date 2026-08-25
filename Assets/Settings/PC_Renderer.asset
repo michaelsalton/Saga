@@ -41,10 +41,11 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 1009113659368096733}
+  - {fileID: 6229822312136659664}
   - {fileID: -4088876540770295430}
   - {fileID: 7491871100833207956}
   - {fileID: 7861510998709246806}
-  m_RendererFeatureMap: dd43a1d48617010e7a61f530736441c794962d941279f867561be4eb99b2196d
+  m_RendererFeatureMap: dd43a1d48617010ed052b5c862c674567a61f530736441c794962d941279f867561be4eb99b2196d
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: e3d11242d042d5f41bc7cb2cca69a025, type: 2}
@@ -87,6 +88,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Saga.Rendering.PixelCameraRenderFeature
   m_Active: 1
   upscaleShader: {fileID: 4800000, guid: 65cf131683e45e0469b99b3b5044afa4, type: 3}
+--- !u!114 &6229822312136659664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e49c2985a0684cca9b1144a5561c2233, type: 3}
+  m_Name: GlassRenderFeature
+  m_EditorClassIdentifier: Saga.Rendering::Saga.Rendering.GlassRenderFeature
+  m_Active: 1
+  settings:
+    injectionPoint: 500
 --- !u!114 &7491871100833207956
 MonoBehaviour:
   m_ObjectHideFlags: 0
