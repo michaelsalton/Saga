@@ -21,7 +21,7 @@ namespace Saga.Rendering
                  "including the walls and props that were being cut before.\n\n" +
                  "ADD the bit rather than replacing the existing one: if lights are using rendering " +
                  "layers, clearing layer 0 would drop the object out of its lighting too.\n\n" +
-                 "Only reaches shaders that define SAGA_OCCLUDABLE (Saga/Lit). Saga/Ground and " +
+                 "Only reaches shaders that define SAGA_OCCLUDABLE (Saga/Lit). Saga/GrassGround and " +
                  "Saga/Grass never cut regardless of what is ticked.")]
         [SerializeField] RenderingLayerMask occludableLayers = 1 << 1;
 

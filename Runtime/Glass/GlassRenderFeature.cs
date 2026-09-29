@@ -4,13 +4,6 @@ using UnityEngine.Rendering.Universal;
 
 namespace Saga.Rendering
 {
-    // URP renderer feature that owns the Saga/Glass draw. Glass is tagged LightMode "SagaGlass" so URP's own
-    // transparent pass skips it, and the draw set is the GlassSurface registry rather than a layer filter --
-    // so a glass object renders only while it carries an enabled GlassSurface AND this feature is on the
-    // renderer. See GlassPass for why glass is drawn one object at a time.
-    //
-    // Order matters at a shared injection point: features run in renderer-asset list order, so this sits
-    // ABOVE GodrayRenderFeature (also event 500) to get rays landing on the glass surface.
     public class GlassRenderFeature : ScriptableRendererFeature
     {
         [System.Serializable]
@@ -38,9 +31,6 @@ namespace Saga.Rendering
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             pass.renderPassEvent = settings.injectionPoint;
-
-            // The glass shader samples _CameraDepthTexture for its refraction foreground clamp. The RP asset
-            // already forces the depth texture on, but declaring it here is the ConfigureInput contract.
             pass.ConfigureInput(ScriptableRenderPassInput.Depth);
             renderer.EnqueuePass(pass);
         }

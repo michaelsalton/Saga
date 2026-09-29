@@ -1,10 +1,10 @@
-#ifndef SAGA_GROUND_PATCHES_INCLUDED
-#define SAGA_GROUND_PATCHES_INCLUDED
+#ifndef SAGA_GRASS_GROUND_PATCHES_INCLUDED
+#define SAGA_GRASS_GROUND_PATCHES_INCLUDED
 
-#include "Packages/com.saltbox.saga/Shaders/Ground/GroundInput.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/GrassGround/GrassGroundInput.hlsl"
 
 // SagaHash21 / SagaValueNoise / SagaFbm moved to ShaderLibrary/Noise.hlsl so
-// Grass.shader can reach them too -- it cannot include this file, because GroundInput.hlsl
+// Grass.shader can reach them too -- it cannot include this file, because GrassGroundInput.hlsl
 // above opens its own UnityPerMaterial CBUFFER. See Grass/Plans/02_GrassAccents.md.
 #include "Packages/com.saltbox.saga/ShaderLibrary/Noise.hlsl"
 
@@ -27,13 +27,13 @@ float SagaPatchValue(float2 xz, float scale, float seed)
     return SagaFbm(q, (int)max(_PatchOctaves, 1.0), _PatchGain);
 }
 
-half3 SagaGroundWash(half3 c, float2 xz)
+half3 SagaGrassGroundWash(half3 c, float2 xz)
 {
     float w = SagaFbm(xz * rcp(max(_WashScale, 1e-3)), 3, 0.5);
     return c * (half)(1.0 + w * _WashStrength);
 }
 
-half3 SagaApplyGroundPatches(half3 albedo, float2 xz)
+half3 SagaApplyGrassGroundPatches(half3 albedo, float2 xz)
 {
     half3 c = albedo;
 
@@ -55,7 +55,7 @@ half3 SagaApplyGroundPatches(half3 albedo, float2 xz)
         }
     }
 
-    [branch] if (_WashStrength > 0.001) c = SagaGroundWash(c, xz);
+    [branch] if (_WashStrength > 0.001) c = SagaGrassGroundWash(c, xz);
 
     return c;
 }

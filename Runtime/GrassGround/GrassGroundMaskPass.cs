@@ -6,9 +6,9 @@ using UnityEngine.Experimental.Rendering;
 
 namespace Saga.Rendering
 {
-    public class GroundMaskPass : ScriptableRenderPass
+    public class GrassGroundMaskPass : ScriptableRenderPass
     {
-        static readonly int GroundMaskTexId = Shader.PropertyToID("_GroundMaskTex");
+        static readonly int GrassGroundMaskTexId = Shader.PropertyToID("_GrassGroundMaskTex");
 
         static readonly ShaderTagId[] ShaderTags =
         {
@@ -49,7 +49,7 @@ namespace Saga.Rendering
                 clearColor = Color.clear,
                 filterMode = FilterMode.Point,
                 wrapMode = TextureWrapMode.Clamp,
-                name = "_GroundMaskTex",
+                name = "_GrassGroundMaskTex",
             };
             TextureHandle maskRT = renderGraph.CreateTexture(td);
 
@@ -66,7 +66,8 @@ namespace Saga.Rendering
             var filter = new FilteringSettings(RenderQueueRange.opaque, layerMask);
             var param = new RendererListParams(renderingData.cullResults, draw, filter);
 
-            using var builder = renderGraph.AddRasterRenderPass<PassData>("Saga Ground Mask", out var passData);
+            using var builder =
+                renderGraph.AddRasterRenderPass<PassData>("Saga Grass Ground Mask", out var passData);
 
             passData.list = renderGraph.CreateRendererList(param);
 
@@ -78,7 +79,7 @@ namespace Saga.Rendering
                 builder.UseRendererList(passData.list);
             }
 
-            builder.SetGlobalTextureAfterPass(maskRT, GroundMaskTexId);
+            builder.SetGlobalTextureAfterPass(maskRT, GrassGroundMaskTexId);
             builder.AllowPassCulling(false);
 
             builder.SetRenderFunc<PassData>(static (PassData d, RasterGraphContext ctx) =>

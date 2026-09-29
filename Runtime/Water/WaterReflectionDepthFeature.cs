@@ -9,7 +9,7 @@ namespace Saga.Rendering
     ///
     /// Goes on the SAME feature-less renderer <see cref="WaterReflection"/> already points its mirror camera
     /// at (GroundCapture_Renderer, index 1). Step 08 chose that renderer precisely for having no features,
-    /// and <see cref="GroundColorMap"/>'s capture camera shares it — so the camera gate below is what
+    /// and <see cref="GrassGroundColorMap"/>'s capture camera shares it — so the camera gate below is what
     /// preserves that guarantee. For any camera other than the live reflection camera this feature enqueues
     /// nothing at all, which also keeps ConfigureInput(Depth) — and the depth prepass it forces — off the
     /// ground capture.
@@ -49,8 +49,8 @@ namespace Saga.Rendering
             if (WaterReflection.DepthTarget == null) return;
 
             // Published here rather than in WaterReflection.cs so it tracks the FEATURE being installed and
-            // reachable, not merely the component existing. Same shape as GroundMaskRenderFeature's
-            // _GroundMaskValid.
+            // reachable, not merely the component existing. Same shape as GrassGroundMaskRenderFeature's
+            // _GrassGroundMaskValid.
             Shader.SetGlobalFloat(DepthValidId, 1f);
 
             pass.renderPassEvent = injectionPoint;

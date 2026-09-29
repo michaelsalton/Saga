@@ -16,9 +16,6 @@ struct SagaSurface
 
 #if defined(_WORLD_UV)
 
-// The three planar projections, carried as a struct rather than re-swizzled from p at each call site,
-// because _RELIEF marches each one independently and they stop being derivable from a single point.
-// Without _RELIEF these are exactly p.zy / p.xz / p.xy, as they always were.
 struct SagaTriUV
 {
     float2 x;
@@ -101,18 +98,11 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
 
     s.normalWS = SagaTriplanarNormal(tuv, w, nGeomWS);
 #else
-    // The TBN is built up here rather than beside the normal unpack below, because _RELIEF needs it to
-    // get the view direction into tangent space BEFORE anything samples.
     half3 tWS = normalize(tangentWS.xyz);
     half3 bWS = tangentWS.w * cross(nGeomWS, tWS);
     half3x3 tbn = half3x3(tWS, bWS, nGeomWS);
 
 #if defined(_RELIEF)
-    // mul(tbn, v) with rows (T,B,N) gives (dot(T,v), dot(B,v), dot(N,v)) -- world to tangent, the
-    // transpose of the TransformTangentToWorld below. Every sample after this reads the offset uv.
-    //
-    // No metres conversion on this path: mesh UVs carry no scale the shader can know, so _ReliefDepth
-    // is in raw UV units here. Deliberate, and the property label says so.
     SagaReliefParams relief;
     relief.depth    = _ReliefDepth;
     relief.steps    = _ReliefSteps;

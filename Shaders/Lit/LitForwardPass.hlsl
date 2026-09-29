@@ -24,8 +24,6 @@
 #include "Packages/com.saltbox.saga/Shaders/Lit/LitLighting.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Lit/LitSurface.hlsl"
 
-// Only shaders that opt in (Saga/Lit) pull this in. Saga/Ground compiles this same file without the
-// define and is untouched -- see the HLSLINCLUDE block in Lit.shader for why that matters.
 #ifdef SAGA_OCCLUDABLE
 #include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
 #endif

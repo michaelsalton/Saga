@@ -1,4 +1,4 @@
-Shader "Saga/GroundMask"
+Shader "Saga/GrassGroundMask"
 {
     SubShader
     {
@@ -6,7 +6,7 @@ Shader "Saga/GroundMask"
 
         Pass
         {
-            Name "GroundMask"
+            Name "GrassGroundMask"
             Tags { "LightMode" = "UniversalForward" }
 
             ZWrite Off

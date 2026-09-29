@@ -3,7 +3,7 @@
 
 #pragma multi_compile_instancing
 
-// Only shaders that opt in (Saga/Lit) pull this in. Saga/Ground compiles this same file without the
+// Only shaders that opt in (Saga/Lit) pull this in. Saga/GrassGround compiles this same file without the
 // define and keeps its original interpolator count exactly.
 #ifdef SAGA_OCCLUDABLE
 #include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"

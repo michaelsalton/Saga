@@ -3,8 +3,6 @@
 
 #pragma multi_compile_instancing
 
-// Nothing consumes DepthNormals today, and it is cut anyway: an unclipped variant of a pass that
-// already exists is exactly the sort of thing that stays correct until someone turns it on.
 #ifdef SAGA_OCCLUDABLE
 #include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
 #endif
@@ -46,8 +44,6 @@ half4 DepthNormalsFrag(Varyings IN) : SV_TARGET
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 #ifdef SAGA_OCCLUDABLE
-    // Same contract as DepthOnly: clip early (nothing here is sampled), and compute coverage through
-    // the exact same call so it can never drift from the forward pass.
     SagaOcclusionClip(SagaOcclusionMask(IN.positionWS), IN.positionHCS.xy);
 #endif
     return half4(NormalizeNormalPerPixel(IN.normalWS), 0.0h);

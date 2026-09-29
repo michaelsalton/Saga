@@ -12,8 +12,8 @@ namespace Saga.Rendering
     /// The target is a PERSISTENT RenderTexture owned by <see cref="WaterReflection"/> and imported here,
     /// not a RenderGraph texture. It has to be: the water reads it during the MAIN camera's render, which
     /// is a separate graph execution, and a transient graph resource does not survive that boundary.
-    /// (Contrast <see cref="GroundMaskPass"/>, whose mask is consumed inside the same camera's frame and can
-    /// therefore use SetGlobalTextureAfterPass.)
+    /// (Contrast <see cref="GrassGroundMaskPass"/>, whose mask is consumed inside the same camera's frame
+    /// and can therefore use SetGlobalTextureAfterPass.)
     /// </summary>
     public class WaterReflectionDepthPass : ScriptableRenderPass
     {

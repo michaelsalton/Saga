@@ -3,17 +3,6 @@ using UnityEngine;
 
 namespace Saga.Rendering
 {
-    // ------------------------------------------------------------------------------------------------
-    // Opt-in marker for Saga/Glass renderers, and the registry GlassPass draws from.
-    //
-    // Glass has to be drawn ONE OBJECT AT A TIME. Each pane needs a copy of the camera colour that already
-    // contains the panes behind it, so a grab has to be interleaved between every draw. A RendererListHandle
-    // is opaque -- there is no walking it item by item -- so the draw set has to live on this side of the
-    // graph as a plain list. That is the whole reason this component exists.
-    //
-    // Same shape as OutlineControl, and the same consequence: a glass object WITHOUT this component is not
-    // drawn at all.
-    // ------------------------------------------------------------------------------------------------
     [ExecuteAlways]
     [DisallowMultipleComponent]
     public class GlassSurface : MonoBehaviour
@@ -21,11 +10,7 @@ namespace Saga.Rendering
         public readonly struct Target
         {
             public readonly Renderer renderer;
-
-            // One material per submesh, resolved at Refresh time. CommandBuffer.DrawRenderer takes the
-            // material explicitly, and Renderer.sharedMaterials returns a fresh copy on every access.
             public readonly Material[] materials;
-
             public Target(Renderer r, Material[] m) { renderer = r; materials = m; }
         }
 
@@ -51,8 +36,6 @@ namespace Saga.Rendering
 
         void OnDisable()
         {
-            // Leaving the registry is the entire teardown. No GPU state is cached anywhere, so the object
-            // stops being drawn on the very next frame.
             ActiveList.Remove(this);
             targets.Clear();
         }
@@ -61,8 +44,6 @@ namespace Saga.Rendering
 
         void OnTransformChildrenChanged() { if (isActiveAndEnabled && includeChildRenderers) Refresh(); }
 
-        // Re-resolve the renderers this component owns and their per-submesh materials. Needed after a child
-        // hierarchy change AND after a material swap, since the materials are cached here.
         public void Refresh()
         {
             targets.Clear();
@@ -85,7 +66,6 @@ namespace Saga.Rendering
             }
         }
 
-        // Nearest GlassSurface at or above the renderer, so nested components never fight over one renderer.
         static GlassSurface OwnerOf(Renderer r)
         {
             for (var t = r.transform; t != null; t = t.parent)
@@ -96,8 +76,6 @@ namespace Saga.Rendering
             return null;
         }
 
-        // Clamped to the mesh's real submesh count, not the material slot count. Extra material slots re-draw
-        // the last submesh, and asking DrawRenderer for a submesh the mesh does not have is invalid.
         static Material[] MaterialsOf(Renderer r)
         {
             MaterialScratch.Clear();

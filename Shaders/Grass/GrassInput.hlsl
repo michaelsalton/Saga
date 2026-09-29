@@ -38,23 +38,23 @@ CBUFFER_END
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 
-TEXTURE2D(_GroundColorTex);
-SAMPLER(sampler_GroundColorTex);
-float4 _GroundColorRect;
+TEXTURE2D(_GrassGroundColorTex);
+SAMPLER(sampler_GrassGroundColorTex);
+float4 _GrassGroundColorRect;
 
-TEXTURE2D(_GroundMaskTex);
-SAMPLER(sampler_GroundMaskTex);
-float _GroundMaskValid;
+TEXTURE2D(_GrassGroundMaskTex);
+SAMPLER(sampler_GrassGroundMaskTex);
+float _GrassGroundMaskValid;
 
-float2 GroundUV(float2 worldXZ)
+float2 GrassGroundUV(float2 worldXZ)
 {
-    return (worldXZ - _GroundColorRect.xy) * _GroundColorRect.zw;
+    return (worldXZ - _GrassGroundColorRect.xy) * _GrassGroundColorRect.zw;
 }
 
-bool IsGround(float2 worldXZ)
+bool IsGrassGround(float2 worldXZ)
 {
-    return SAMPLE_TEXTURE2D_LOD(_GroundColorTex, sampler_GroundColorTex,
-                                GroundUV(worldXZ), 0).a >= 0.5;
+    return SAMPLE_TEXTURE2D_LOD(_GrassGroundColorTex, sampler_GrassGroundColorTex,
+                                GrassGroundUV(worldXZ), 0).a >= 0.5;
 }
 
 float4 WorldToScreenNDC(float3 positionWS)

@@ -125,7 +125,7 @@ Shader "Saga/Grass"
                 OUT.uv          = TRANSFORM_TEX(IN.uv, _BaseMap);
                 OUT.accent      = acc.tint;
 
-                OUT.groundUV = GroundUV(feetWS.xz);
+                OUT.groundUV = GrassGroundUV(feetWS.xz);
                 OUT.feetNDC  = WorldToScreenNDC(feetWS);
 
                 // Cloud shadow is sampled at the FEET, not per fragment, so a whole tuft agrees with
@@ -135,7 +135,7 @@ Shader "Saga/Grass"
                 OUT.feetEyeCloud = float2(-TransformWorldToView(feetWS).z,
                                           SagaCloudShadow(feetWS));
 
-                if (!IsGround(feetWS.xz))
+                if (!IsGrassGround(feetWS.xz))
                     OUT.positionHCS = float4(-2, -2, -2, 1);
 
                 return OUT;
@@ -154,15 +154,16 @@ Shader "Saga/Grass"
                 // The baked map is a static snapshot and CANNOT contain moving cloud, so the mask has
                 // to be applied to this branch by hand -- otherwise a tuft on the fallback path stays
                 // bright while the ground around it darkens.
-                half3 col = SAMPLE_TEXTURE2D(_GroundColorTex, sampler_GroundColorTex, IN.groundUV).rgb
-                          * cloud;
+                half3 col = SAMPLE_TEXTURE2D(_GrassGroundColorTex, sampler_GrassGroundColorTex,
+                                             IN.groundUV).rgb * cloud;
 
                 float2 suv = IN.feetNDC.xy / IN.feetNDC.w;
 
                 bool inFront  = IN.feetNDC.w > 0.0;
                 bool onScreen = all(suv == saturate(suv));
-                bool isGround = _GroundMaskValid >= 0.5 &&
-                                SAMPLE_TEXTURE2D(_GroundMaskTex, sampler_GroundMaskTex, suv).r >= 0.5;
+                bool isGround = _GrassGroundMaskValid >= 0.5 &&
+                                SAMPLE_TEXTURE2D(_GrassGroundMaskTex,
+                                                 sampler_GrassGroundMaskTex, suv).r >= 0.5;
 
                 float sceneEye = SagaEyeDepth(SampleSceneDepth(suv));
 

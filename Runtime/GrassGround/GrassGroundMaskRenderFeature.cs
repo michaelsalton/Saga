@@ -4,17 +4,18 @@ using UnityEngine.Rendering.Universal;
 
 namespace Saga.Rendering
 {
-    public class GroundMaskRenderFeature : ScriptableRendererFeature
+    public class GrassGroundMaskRenderFeature : ScriptableRendererFeature
     {
         [System.Serializable]
         public class Settings
         {
-            [Tooltip("Assign the Saga/GroundMask shader. The override material is created and owned by the " +
-                     "feature.")]
+            [Tooltip("Assign the Saga/GrassGroundMask shader. The override material is created and owned " +
+                     "by the feature.")]
             public Shader maskShader;
 
-            [Tooltip("Layers drawn into the mask. MUST match GroundColorMap's Ground Mask — the baked map and " +
-                     "the live probe have to agree on what 'ground' means. Default is Ground (layer 3).")]
+            [Tooltip("Layers drawn into the mask. MUST match GrassGroundColorMap's Ground Mask — the baked " +
+                     "map and the live probe have to agree on what 'ground' means. Default is GrassGround " +
+                     "(layer 3).")]
             public LayerMask groundLayers = 1 << 3;
 
             [Tooltip("When the mask is produced. AfterRenderingOpaques is the only sane choice: it is after " +
@@ -24,14 +25,14 @@ namespace Saga.Rendering
         }
 
         [SerializeField] Settings settings = new Settings();
-        static readonly int MaskValidId = Shader.PropertyToID("_GroundMaskValid");
+        static readonly int MaskValidId = Shader.PropertyToID("_GrassGroundMaskValid");
 
         Material maskMaterial;
-        GroundMaskPass pass;
+        GrassGroundMaskPass pass;
 
         public override void Create()
         {
-            pass = new GroundMaskPass();
+            pass = new GrassGroundMaskPass();
             if (settings.maskShader != null)
                 maskMaterial = CoreUtils.CreateEngineMaterial(settings.maskShader);
         }

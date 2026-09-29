@@ -1,4 +1,4 @@
-Shader "Saga/Ground"
+Shader "Saga/GrassGround"
 {
     Properties
     {
@@ -40,7 +40,7 @@ Shader "Saga/Ground"
         [HDR] _EmissionColor ("Emission Color", Color) = (0, 0, 0, 1)
         _EmissiveIntensity ("Emissive Intensity", Range(0, 8)) = 1
 
-        [Header(Ground Color Patches)]
+        [Header(Grass Ground Color Patches)]
         [IntRange] _PatchCount ("Active Patch Layers", Range(0, 4)) = 4
 
         [Header(Patch Noise Character)]
@@ -49,7 +49,7 @@ Shader "Saga/Ground"
         _PatchStretch ("Stretch (1 = round)", Range(1, 8)) = 5.5
         _PatchAngle ("Stretch Angle (degrees)", Range(0, 180)) = 0
 
-        [Header(Ground Tonal Wash)]
+        [Header(Grass Ground Tonal Wash)]
         _WashScale ("Wash Size (metres)", Range(1, 64)) = 12
         _WashStrength ("Wash Strength", Range(0, 0.5)) = 0.12
 
@@ -81,7 +81,7 @@ Shader "Saga/Ground"
         LOD 100
 
         HLSLINCLUDE
-        #include "Packages/com.saltbox.saga/Shaders/Ground/GroundInput.hlsl"
+        #include "Packages/com.saltbox.saga/Shaders/GrassGround/GrassGroundInput.hlsl"
         ENDHLSL
 
         Pass
@@ -97,10 +97,10 @@ Shader "Saga/Ground"
             #pragma vertex Vert
             #pragma fragment Frag
 
-            #include "Packages/com.saltbox.saga/Shaders/Ground/GroundPatches.hlsl"
+            #include "Packages/com.saltbox.saga/Shaders/GrassGround/GrassGroundPatches.hlsl"
 
             #define SAGA_MODIFY_SURFACE(surf, positionWS) \
-                surf.albedo = SagaApplyGroundPatches(surf.albedo, (positionWS).xz)
+                surf.albedo = SagaApplyGrassGroundPatches(surf.albedo, (positionWS).xz)
 
             #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitForwardPass.hlsl"
 
@@ -129,7 +129,7 @@ Shader "Saga/Ground"
 
         // --------------------------------------------------------------
         // DepthOnly — LOAD-BEARING. Grass.shader and the water stack both
-        // sample scene depth, and GroundMaskPass draws the ground with
+        // sample scene depth, and GrassGroundMaskPass draws the ground with
         // ZTest Equal against it. Do not drop this pass.
         // --------------------------------------------------------------
         Pass

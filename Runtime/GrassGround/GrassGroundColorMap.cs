@@ -5,14 +5,14 @@ using UnityEngine.Rendering.Universal;
 namespace Saga.Rendering
 {
     [ExecuteAlways]
-    [AddComponentMenu("Saga/Rendering/Ground Color Map")]
+    [AddComponentMenu("Saga/Rendering/Grass Ground Color Map")]
     [DisallowMultipleComponent]
-    public class GroundColorMap : MonoBehaviour
+    public class GrassGroundColorMap : MonoBehaviour
     {
         [Header("Captured area (world XZ)")]
         [Tooltip("Minimum corner of the captured rectangle, in world X/Z. Anything outside the rectangle " +
                  "clamps to the nearest edge texel rather than going black — but it will be visibly wrong, " +
-                 "so cover every place a ground-color sprite can stand. Use 'Fit To Ground Bounds'.")]
+                 "so cover every place a ground-color sprite can stand. Use 'Fit To Grass Ground Bounds'.")]
         [SerializeField] Vector2 worldOrigin = new Vector2(-32f, -32f);
 
         [Tooltip("Size of the captured rectangle along world X and Z. Must be positive.")]
@@ -23,10 +23,10 @@ namespace Saga.Rendering
         [SerializeField] float captureHeight = 100f;
 
         [Header("What gets photographed")]
-        [Tooltip("Layers rendered into the map. Ground + GroundMask by default. CRITICAL: never include a " +
-                 "layer holding ground-color sprites — they would sample the map they are being baked " +
-                 "into, freezing one frame of garbage in. A warning fires at capture time if that happens.")]
-        [SerializeField] LayerMask groundMask = (1 << 3) | (1 << 7);   // Ground, GroundMask
+        [Tooltip("Layers rendered into the map. GrassGround + GrassGroundMask by default. CRITICAL: never " +
+                 "include a layer holding ground-color sprites — they would sample the map they are being " +
+                 "baked into, freezing one frame of garbage in. A warning fires at capture time if so.")]
+        [SerializeField] LayerMask groundMask = (1 << 3) | (1 << 7);   // GrassGround, GrassGroundMask
 
         [Tooltip("Color of the map wherever no ground was drawn. Sprites standing over a hole (or outside " +
                  "the rectangle, via edge clamp) get this. Do not leave it white. ALPHA IS IGNORED — the " +
@@ -65,15 +65,15 @@ namespace Saga.Rendering
         [Tooltip("Log the resolution, density and world rectangle on every capture.")]
         [SerializeField] bool logOnCapture = true;
 
-        static readonly int GroundTexID  = Shader.PropertyToID("_GroundColorTex");
-        static readonly int GroundRectID = Shader.PropertyToID("_GroundColorRect");
+        static readonly int GrassGroundTexID  = Shader.PropertyToID("_GrassGroundColorTex");
+        static readonly int GrassGroundRectID = Shader.PropertyToID("_GrassGroundColorRect");
         static readonly int CloudStrengthID = Shader.PropertyToID("_CloudStrength");
 
         /// <summary>The published map, or null before the first capture. Read-only for other systems.</summary>
-        public static RenderTexture GroundTexture { get; private set; }
+        public static RenderTexture GrassGroundTexture { get; private set; }
 
         /// <summary>The published (originX, originZ, 1/sizeX, 1/sizeZ) mapping, matching the shader.</summary>
-        public static Vector4 GroundRect { get; private set; }
+        public static Vector4 GrassGroundRect { get; private set; }
 
         RenderTexture rt;
         int builtWidth, builtHeight;
@@ -87,8 +87,8 @@ namespace Saga.Rendering
 
         void OnDisable()
         {
-            Shader.SetGlobalTexture(GroundTexID, Texture2D.grayTexture);
-            GroundTexture = null;
+            Shader.SetGlobalTexture(GrassGroundTexID, Texture2D.grayTexture);
+            GrassGroundTexture = null;
             ReleaseRT();
         }
 
@@ -140,7 +140,7 @@ namespace Saga.Rendering
             float cloudRestore = Shader.GetGlobalFloat(CloudStrengthID);
             Shader.SetGlobalFloat(CloudStrengthID, 0f);
 
-            var go = new GameObject("GroundColorCaptureCamera") { hideFlags = HideFlags.HideAndDontSave };
+            var go = new GameObject("GrassGroundColorCaptureCamera") { hideFlags = HideFlags.HideAndDontSave };
             try
             {
                 var cam = go.AddComponent<Camera>();
@@ -196,13 +196,13 @@ namespace Saga.Rendering
 
         void Publish()
         {
-            GroundTexture = rt;
-            GroundRect    = BuildRect();
-            Shader.SetGlobalTexture(GroundTexID, rt);
-            Shader.SetGlobalVector(GroundRectID, GroundRect);
+            GrassGroundTexture = rt;
+            GrassGroundRect    = BuildRect();
+            Shader.SetGlobalTexture(GrassGroundTexID, rt);
+            Shader.SetGlobalVector(GrassGroundRectID, GrassGroundRect);
 
             if (!logOnCapture) return;
-            Debug.Log($"[{nameof(GroundColorMap)}] Captured {builtWidth}x{builtHeight} " +
+            Debug.Log($"[{nameof(GrassGroundColorMap)}] Captured {builtWidth}x{builtHeight} " +
                       $"({builtWidth / worldSize.x:0.#} x {builtHeight / worldSize.y:0.#} texels/unit) over " +
                       $"X [{worldOrigin.x:0.##}, {worldOrigin.x + worldSize.x:0.##}] " +
                       $"Z [{worldOrigin.y:0.##}, {worldOrigin.y + worldSize.y:0.##}].", this);
@@ -216,7 +216,7 @@ namespace Saga.Rendering
             return new Vector4(worldOrigin.x, v0, 1f / worldSize.x, sv);
         }
 
-        const string GroundColorShaderName = "Saga/Grass";
+        const string GrassGroundColorShaderName = "Saga/Grass";
 
         void WarnAboutSelfCapture()
         {
@@ -228,11 +228,12 @@ namespace Saga.Rendering
                 foreach (var mat in r.sharedMaterials)
                 {
                     if (mat == null || mat.shader == null) continue;
-                    if (mat.shader.name != GroundColorShaderName) continue;
+                    if (mat.shader.name != GrassGroundColorShaderName) continue;
 
                     Debug.LogWarning(
-                        $"[{nameof(GroundColorMap)}] '{r.name}' uses {GroundColorShaderName} and sits on " +
-                        $"layer '{LayerMask.LayerToName(r.gameObject.layer)}', which is INSIDE Ground Mask. " +
+                        $"[{nameof(GrassGroundColorMap)}] '{r.name}' uses {GrassGroundColorShaderName} " +
+                        $"and sits on layer '{LayerMask.LayerToName(r.gameObject.layer)}', which is " +
+                        $"INSIDE Ground Mask. " +
                         $"It will sample the map it is being baked into. Move it to the 'Grass' layer (or " +
                         $"any layer outside the mask).", r);
                     return;
@@ -256,7 +257,7 @@ namespace Saga.Rendering
 
             rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGBHalf)
             {
-                name = "GroundColorMap",
+                name = "GrassGroundColorMap",
                 filterMode = filter,
                 antiAliasing = 1,
                 useMipMap = false,
@@ -278,8 +279,8 @@ namespace Saga.Rendering
             builtWidth = builtHeight = 0;
         }
 
-        [ContextMenu("Fit To Ground Bounds")]
-        void FitToGroundBounds()
+        [ContextMenu("Fit To Grass Ground Bounds")]
+        void FitToGrassGroundBounds()
         {
             var renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Exclude);
             bool any = false;
@@ -294,7 +295,7 @@ namespace Saga.Rendering
 
             if (!any)
             {
-                Debug.LogWarning($"[{nameof(GroundColorMap)}] No active renderers on the ground mask — " +
+                Debug.LogWarning($"[{nameof(GrassGroundColorMap)}] No active renderers on the ground mask — " +
                                  $"nothing to fit to. Check Ground Mask.", this);
                 return;
             }
