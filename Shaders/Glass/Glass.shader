@@ -2,128 +2,118 @@ Shader "Saga/Glass"
 {
     Properties
     {
+        [Header(Color)]
+        [MainColor] _BaseColor ("Base Color", Color) = (1, 1, 1, 1)
+
         [Header(Surface)]
         [Normal] _NormalMap ("Normal Map", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 2)) = 1
-        _WavinessSlope ("Waviness Slope (0 = flat)", Range(0, 0.5)) = 0.12
-        _WavinessScale ("Waviness Waves Per UV", Range(0.5, 24)) = 3
 
-        [Header(Transmission)]
-        _TransmissionTint ("Tint Through The Glass", Color) = (0.82, 0.94, 0.90, 1)
-        _AbsorptionDensity ("Absorption Density", Range(0, 32)) = 12
-        _ThicknessMetres ("Thickness (m)", Range(0.002, 0.5)) = 0.08
-
-        [Header(Refraction)]
-        _RefractionDistortion ("Distortion At Rim (internal px)", Range(0, 12)) = 2
-        _RefractionEdgeFade ("Screen Edge Fade (UV)", Range(0, 0.25)) = 0.05
-
-        [Header(Reflection)]
-        [HDR] _ReflectColor ("Reflection Color", Color) = (0.55, 0.68, 0.85, 1)
-        _ReflectMin ("Min (head on, 0.04 = physical)", Range(0, 1)) = 0.06
-        _ReflectMax ("Max (grazing)", Range(0, 1)) = 0.5
-        _FresnelPower ("Fresnel Power (5 = Schlick)", Range(0.5, 8)) = 2
-        [IntRange] _ReflectBands ("Fresnel Bands (0 = smooth)", Range(0, 8)) = 3
-        _ReflectBandSoftness ("Band Softness", Range(0, 1)) = 0
-
-        [Header(Sun Glint)]
-        [HDR] _GlintColor ("Color", Color) = (1, 1, 1, 1)
-        _GlintIntensity ("Intensity", Range(0, 4)) = 1
-        _GlintCutoff ("Cutoff (N dot L)", Range(0, 1)) = 0.85
-        _GlintFalloff ("Falloff", Range(0.01, 0.5)) = 0.12
-        _GlintPower ("Power (core tightness)", Range(1, 16)) = 4
-
-        [Header(Composite)]
-        _CompositeBlend ("Composite Blend (1 = replace)", Range(0, 1)) = 1
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull (Off for single quads)", Float) = 2
+        [Header(Gloss)]
+        _Smoothness ("Smoothness", Range(0, 1)) = 0.9
+        _Reflectivity ("Reflectivity", Range(0, 1)) = 0.05
     }
 
     SubShader
     {
         Tags
         {
-            "RenderType"="Transparent"
-            "Queue"="Transparent"
+            "RenderType"="Opaque"
+            "Queue"="Geometry"
             "RenderPipeline"="UniversalPipeline"
         }
-        LOD 100
 
         Pass
         {
             Name "GlassForward"
-            Tags { "LightMode"="SagaGlass" }
-            Blend SrcAlpha OneMinusSrcAlpha
-            ZWrite Off
-            ZTest LEqual
-            Cull [_Cull]
+            Tags { "LightMode"="UniversalForward" }
 
             HLSLPROGRAM
 
-            #pragma target 3.5
             #pragma vertex Vert
             #pragma fragment Frag
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
 
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassInput.hlsl"        // CBUFFER, textures, scene colour + depth texture declarations
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassSurface.hlsl"      // shading normal, incl. the procedural waviness
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassAbsorption.hlsl"   // Beer-Lambert tint over the slab chord
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassRefraction.hlsl"   // screen-space refraction with a foreground clamp
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassFresnel.hlsl"      // Schlick reflectance, banded
-            #include "Packages/com.saltbox.saga/Shaders/Glass/GlassSpecular.hlsl"     // sun-anchored hard glint
-            #include "Packages/com.saltbox.saga/ShaderLibrary/CloudShadows.hlsl"
-            #include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseColor;
+                float4 _NormalMap_ST;
+                float _NormalScale;
+                float _Smoothness;
+                float _Reflectivity;
+            CBUFFER_END
+
+            TEXTURE2D(_NormalMap);
+            SAMPLER(sampler_NormalMap);
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
-                float4 tangentOS : TANGENT;
+                float4 tangentOS : tangent;
                 float2 uv : TEXCOORD0;
             };
 
             struct Varyings
             {
                 float4 positionHCS : SV_POSITION;
-                float3 positionWS : TEXCOORD0;
-                half3  normalWS : TEXCOORD1;
-                half4  tangentWS : TEXCOORD2;
-                float2 uv : TEXCOORD3;
+                float2 uv : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
+                float3 tangentWS : TEXCOORD2;
+                float3 bitangentWS : TEXCOORD3;
+                float3 positionWS : TEXCOORD4;
             };
 
             Varyings Vert(Attributes IN)
             {
-                Varyings OUT = (Varyings)0;
+                Varyings OUT;
 
-                VertexPositionInputs p = GetVertexPositionInputs(IN.positionOS.xyz);
-                VertexNormalInputs n = GetVertexNormalInputs(IN.normalOS, IN.tangentOS);
+                float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+                OUT.positionWS = positionWS;
+                OUT.positionHCS = TransformWorldToHClip(positionWS);
+                OUT.uv = TRANSFORM_TEX(IN.uv, _NormalMap);
 
-                OUT.positionHCS = p.positionCS;
-                OUT.positionWS = p.positionWS;
-                OUT.normalWS = half3(n.normalWS);
-                OUT.tangentWS = half4(n.tangentWS, IN.tangentOS.w * GetOddNegativeScale());
-                OUT.uv = IN.uv;
-
+                VertexNormalInputs normalInputs = GetVertexNormalInputs(IN.normalOS, IN.tangentOS);
+                OUT.normalWS = normalInputs.normalWS;
+                OUT.tangentWS = normalInputs.tangentWS;
+                OUT.bitangentWS = normalInputs.bitangentWS;
                 return OUT;
             }
 
-            half4 Frag(Varyings IN, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_TARGET
+            half4 Frag(Varyings IN) : SV_TARGET
             {
-                half faceSign = IS_FRONT_VFACE(facing, 1.0h, -1.0h);
+                // Normal mapping
+                half4 normalSample = SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, IN.uv);
+                half3 normalTS = UnpackNormalScale(normalSample, _NormalScale);
 
-                float3 N = SagaGlassNormal(IN.uv, IN.normalWS * faceSign, IN.tangentWS);
+                half3x3 tangentToWorld = half3x3(IN.tangentWS, IN.bitangentWS, IN.normalWS);
+                float3 N = normalize(TransformTangentToWorld(normalTS, tangentToWorld));
+
+                // Lighting, gloss, specular, fresnel
+                Light mainLight = GetMainLight();
                 float3 V = GetWorldSpaceNormalizeViewDir(IN.positionWS);
+
+                half lambert = saturate(dot(N, mainLight.direction));
+                half3 diffuse = _BaseColor.rgb * mainLight.color * lambert;
+                half3 ambient = _BaseColor.rgb * SampleSH(N);
+
+                float3 H = normalize(mainLight.direction + V);
+                half shininess = exp2(10 * _Smoothness + 1);
+                half specular = pow(saturate(dot(N, H)), shininess);
+
                 float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
-                half3 transmittance = SagaGlassTransmittance(N, V);
+                float3 reflectionDirection = reflect(-V, N);
+                half3 reflection = GlossyEnvironmentReflection(reflectionDirection, IN.positionWS, 1 - _Smoothness, 1, screenUV);
 
-                SagaGlassRefraction refraction =
-                    SagaGlassRefract(screenUV, IN.positionHCS.z, N, transmittance);
+                half fresnel = _Reflectivity + (1 - _Reflectivity) * pow(1 - saturate(dot(N, V)), 5);
 
-                half3 color = refraction.color;
-                half3 reflected = half3(_ReflectColor.rgb) * SagaCloudShadow(IN.positionWS);
-                color = lerp(color, reflected, SagaGlassFresnel(N, IN.positionWS));
+                half3 color = lerp(diffuse + ambient, reflection, fresnel) + specular * mainLight.color;
 
-                color += SagaGlassGlint(N, IN.positionWS);
-                SagaOcclusionClip(SagaOcclusionMask(IN.positionWS), IN.positionHCS.xy);
-
-                return half4(color, half(_CompositeBlend));
+                return half4(color, 1);
             }
 
             ENDHLSL
