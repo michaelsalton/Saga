@@ -19,7 +19,7 @@ Shader "Saga/Outline"
             #pragma multi_compile_local _ _OUTLINE_CONTROL
 
             // Main light shadows, so a line can be shaded by whatever shades the surface it traces.
-            // _SHADOWS_SOFT is declared to MATCH LitForwardPass.hlsl:4-7 exactly -- same keyword set
+            // _SHADOWS_SOFT is declared to MATCH StandardForwardPass.hlsl:4-7 exactly -- same keyword set
             // means the same filtering code path, which is what guarantees the line and the surface
             // never disagree along a terminator. (Godrays omit it on purpose; PCF-filtering a point in
             // mid-air is meaningless. Here the tap lands on a real surface, so it must match.)
@@ -155,7 +155,7 @@ Shader "Saga/Outline"
                     // search needed, and a silhouette never picks up the background's lighting.
                     float3 posWS = SagaCameraWorldPos(uv, eC);
 
-                    // The same call SagaLitLighting reaches through GetMainLight: same cascade
+                    // The same call SagaStandardLighting reaches through GetMainLight: same cascade
                     // selection, same PCF, same distance fade. Anything cheaper and the line can
                     // disagree with the surface it borders -- which is exactly the artifact this
                     // feature exists to remove. shadowMask 1 / occlusionProbeChannels 0 = realtime
@@ -165,7 +165,7 @@ Shader "Saga/Outline"
                                                  half4(1.0h, 1.0h, 1.0h, 1.0h), half4(0.0h, 0.0h, 0.0h, 0.0h));
                     half cloud = SagaCloudShadow(posWS);
 
-                    // min, not multiply -- LitLighting.hlsl:58-67. The cloud occludes the SAME sun
+                    // min, not multiply -- StandardLighting.hlsl:58-67. The cloud occludes the SAME sun
                     // as the shadow map, so stacking them would darken cloud-over-shadow twice and the
                     // cloud pattern would read as muddy detail inside cast shadows.
                     half shadow = min(sun, cloud);

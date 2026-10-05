@@ -1,5 +1,5 @@
-#ifndef SAGA_LIT_FORWARD_PASS_INCLUDED
-#define SAGA_LIT_FORWARD_PASS_INCLUDED
+#ifndef SAGA_STANDARD_FORWARD_PASS_INCLUDED
+#define SAGA_STANDARD_FORWARD_PASS_INCLUDED
 
 #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS
@@ -19,10 +19,10 @@
 #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
 
 #pragma shader_feature_local_fragment _WORLD_UV
-#pragma shader_feature_local_fragment _RELIEF
+#pragma shader_feature_local_fragment _POM_ON
 
-#include "Packages/com.saltbox.saga/Shaders/Lit/LitLighting.hlsl"
-#include "Packages/com.saltbox.saga/Shaders/Lit/LitSurface.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/Standard/StandardLighting.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/Standard/StandardSurface.hlsl"
 
 #ifdef SAGA_OCCLUDABLE
 #include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
@@ -116,7 +116,7 @@ half4 Frag(Varyings IN) : SV_TARGET
     inputData.shadowMask = SAMPLE_SHADOWMASK(IN.staticLightmapUV);
 #endif
 
-    half3 col = SagaLitLighting(inputData, surf.albedo, surf.metallic, surf.roughness, surf.ao);
+    half3 col = SagaStandardLighting(inputData, surf.albedo, surf.metallic, surf.roughness, surf.ao);
 
     col += surf.emissive;
 

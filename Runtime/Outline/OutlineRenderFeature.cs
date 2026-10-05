@@ -12,7 +12,7 @@ namespace Saga.Rendering
     ///
     /// The edge test (<c>Saga/Outline</c>) reconstructs the surface from <c>_CameraDepthTexture</c> alone
     /// (declared via <see cref="ScriptableRenderPass.ConfigureInput"/>), so it needs no DepthNormals prepass
-    /// and no shader changes to Saga/Lit. Add this feature to the same URP Renderer as the pixel
+    /// and no shader changes to Saga/Standard. Add this feature to the same URP Renderer as the pixel
     /// camera; it self-guards to the world camera, so it's harmless on the composite/UI cameras.
     /// </summary>
     public class OutlineRenderFeature : ScriptableRendererFeature
@@ -42,13 +42,13 @@ namespace Saga.Rendering
             [Tooltip("How far the line follows the shading of the surface it traces. 0 = flat line, the " +
                      "behavior before this existed. 1 = a fully shadowed surface gets a fully tinted line.\n\n" +
                      "Reads the main light's shadow map and the cloud mask at the line's own texel, using " +
-                     "the same calls Saga/Lit makes, so the two cannot disagree. REALTIME shadows only — " +
+                     "the same calls Saga/Standard makes, so the two cannot disagree. REALTIME shadows only — " +
                      "a screen-space pass has no lightmap UVs, so a light set to Baked will shade the " +
                      "surface but not its outline. Requires an orthographic camera; ignored otherwise.")]
             [Range(0f, 1f)] public float lightingStrength = 1f;
 
             [Tooltip("Multiplies the line color where the surface it sits on is fully in shadow. The " +
-                     "default matches the Saga/Lit material's Shadow Tint, so lines and surfaces drift " +
+                     "default matches the Saga/Standard material's Shadow Tint, so lines and surfaces drift " +
                      "the same way; pick something darker for heavier ink in shade.")]
             public Color shadowTint = new Color(0.5f, 0.55f, 0.65f, 1f);
 
@@ -127,7 +127,7 @@ namespace Saga.Rendering
 
             pass.renderPassEvent = settings.injectionPoint;
             // Depth-only: normals are reconstructed from depth in the shader, which sidesteps the DepthNormals
-            // prepass (Saga/Lit has a DepthNormals pass, but nothing writes a usable normals RT). Declared in the feature,
+            // prepass (Saga/Standard has a DepthNormals pass, but nothing writes a usable normals RT). Declared in the feature,
             // per the ConfigureInput contract.
             pass.ConfigureInput(ScriptableRenderPassInput.Depth);
             pass.Setup(material, settings);

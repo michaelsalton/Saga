@@ -1,8 +1,8 @@
-#ifndef SAGA_LIT_LIGHTING_INCLUDED
-#define SAGA_LIT_LIGHTING_INCLUDED
+#ifndef SAGA_STANDARD_LIGHTING_INCLUDED
+#define SAGA_STANDARD_LIGHTING_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-#include "Packages/com.saltbox.saga/Shaders/Lit/LitInput.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
 
 #include "Packages/com.saltbox.saga/ShaderLibrary/PBR.hlsl"
 #include "Packages/com.saltbox.saga/ShaderLibrary/Quantize.hlsl"
@@ -34,7 +34,7 @@ half SagaToonSpecular(half3 N, half3 L, half3 V, half roughness)
     return mask * sqrt(refArea * rcp(area));
 }
 
-half3 SagaLitLighting(InputData inputData, half3 albedo, half metallic, half roughness, half ao)
+half3 SagaStandardLighting(InputData inputData, half3 albedo, half metallic, half roughness, half ao)
 {
     half3 N = inputData.normalWS;
     half3 V = inputData.viewDirectionWS;

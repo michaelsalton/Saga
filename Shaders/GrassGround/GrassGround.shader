@@ -102,7 +102,7 @@ Shader "Saga/GrassGround"
             #define SAGA_MODIFY_SURFACE(surf, positionWS) \
                 surf.albedo = SagaApplyGrassGroundPatches(surf.albedo, (positionWS).xz)
 
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitForwardPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardForwardPass.hlsl"
 
             ENDHLSL
         }
@@ -123,7 +123,7 @@ Shader "Saga/GrassGround"
             HLSLPROGRAM
             #pragma vertex ShadowVert
             #pragma fragment ShadowFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitShadowCasterPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardShadowCasterPass.hlsl"
             ENDHLSL
         }
 
@@ -145,7 +145,7 @@ Shader "Saga/GrassGround"
             HLSLPROGRAM
             #pragma vertex DepthVert
             #pragma fragment DepthFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitDepthOnlyPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardDepthOnlyPass.hlsl"
             ENDHLSL
         }
 
@@ -164,7 +164,7 @@ Shader "Saga/GrassGround"
             HLSLPROGRAM
             #pragma vertex DepthNormalsVert
             #pragma fragment DepthNormalsFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitDepthNormalsPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardDepthNormalsPass.hlsl"
             ENDHLSL
         }
 
@@ -172,7 +172,7 @@ Shader "Saga/GrassGround"
         // Meta — bake-time only. Note it does NOT get the patches: the meta
         // Varyings carry UV only, with no world position to index the field
         // by, so GI bounce reads the flat _BaseColor. Deliberate, and the
-        // reasoning is in LitMetaPass.hlsl.
+        // reasoning is in StandardMetaPass.hlsl.
         // --------------------------------------------------------------
         Pass
         {
@@ -184,7 +184,7 @@ Shader "Saga/GrassGround"
             HLSLPROGRAM
             #pragma vertex UniversalVertexMeta
             #pragma fragment SagaFragmentMeta
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitMetaPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardMetaPass.hlsl"
             ENDHLSL
         }
     }

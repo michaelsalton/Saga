@@ -1,8 +1,8 @@
-#ifndef SAGA_LIT_SURFACE_INCLUDED
-#define SAGA_LIT_SURFACE_INCLUDED
+#ifndef SAGA_STANDARD_SURFACE_INCLUDED
+#define SAGA_STANDARD_SURFACE_INCLUDED
 
-#include "Packages/com.saltbox.saga/Shaders/Lit/LitInput.hlsl"
-#include "Packages/com.saltbox.saga/Shaders/Lit/LitRelief.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/Standard/StandardPOM.hlsl"
 
 struct SagaSurface
 {
@@ -69,12 +69,12 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
     tuv.y = p.xz;
     tuv.z = p.xy;
 
-#if defined(_RELIEF)
-    SagaReliefParams relief;
-    relief.depth    = _ReliefDepth * rcp(max(_MetresPerTile, 1e-4));
-    relief.steps    = _ReliefSteps;
-    relief.remapMin = _ReliefMin;
-    relief.remapMax = _ReliefMax;
+#if defined(_POM_ON)
+    SagaPOMParams pom;
+    pom.depth    = _POMDepth * rcp(max(_MetresPerTile, 1e-4));
+    pom.steps    = _POMSteps;
+    pom.remapMin = _POMMin;
+    pom.remapMax = _POMMax;
 
     float3 sgn = sign(nGeomWS);
     float2 dxX = ddx(tuv.x), dyX = ddy(tuv.x);
@@ -82,14 +82,14 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
     float2 dxZ = ddx(tuv.z), dyZ = ddy(tuv.z);
 
     [branch] if (w.x > 0.05h)
-        tuv.x = SagaReliefOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), relief,
-                                 tuv.x, float3(viewDirWS.z, viewDirWS.y, viewDirWS.x * sgn.x), dxX, dyX);
+        tuv.x = SagaPOMOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), pom,
+                              tuv.x, float3(viewDirWS.z, viewDirWS.y, viewDirWS.x * sgn.x), dxX, dyX);
     [branch] if (w.y > 0.05h)
-        tuv.y = SagaReliefOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), relief,
-                                 tuv.y, float3(viewDirWS.x, viewDirWS.z, viewDirWS.y * sgn.y), dxY, dyY);
+        tuv.y = SagaPOMOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), pom,
+                              tuv.y, float3(viewDirWS.x, viewDirWS.z, viewDirWS.y * sgn.y), dxY, dyY);
     [branch] if (w.z > 0.05h)
-        tuv.z = SagaReliefOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), relief,
-                                 tuv.z, float3(viewDirWS.x, viewDirWS.y, viewDirWS.z * sgn.z), dxZ, dyZ);
+        tuv.z = SagaPOMOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), pom,
+                              tuv.z, float3(viewDirWS.x, viewDirWS.y, viewDirWS.z * sgn.z), dxZ, dyZ);
 #endif
 
     baseMap    = SagaTriplanar(TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap), tuv, w);
@@ -102,15 +102,15 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
     half3 bWS = tangentWS.w * cross(nGeomWS, tWS);
     half3x3 tbn = half3x3(tWS, bWS, nGeomWS);
 
-#if defined(_RELIEF)
-    SagaReliefParams relief;
-    relief.depth    = _ReliefDepth;
-    relief.steps    = _ReliefSteps;
-    relief.remapMin = _ReliefMin;
-    relief.remapMax = _ReliefMax;
+#if defined(_POM_ON)
+    SagaPOMParams pom;
+    pom.depth    = _POMDepth;
+    pom.steps    = _POMSteps;
+    pom.remapMin = _POMMin;
+    pom.remapMax = _POMMax;
 
-    uv = SagaReliefOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), relief,
-                          uv, mul(tbn, viewDirWS), ddx(uv), ddy(uv));
+    uv = SagaPOMOffset(TEXTURE2D_ARGS(_HeightMap, sampler_HeightMap), pom,
+                       uv, mul(tbn, viewDirWS), ddx(uv), ddy(uv));
 #endif
 
     baseMap    = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);

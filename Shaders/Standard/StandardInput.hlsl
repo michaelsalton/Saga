@@ -1,5 +1,5 @@
-#ifndef SAGA_LIT_INPUT_INCLUDED
-#define SAGA_LIT_INPUT_INCLUDED
+#ifndef SAGA_STANDARD_INPUT_INCLUDED
+#define SAGA_STANDARD_INPUT_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
@@ -36,11 +36,11 @@ CBUFFER_START(UnityPerMaterial)
     float _SpecCutoffRough;
     float _SpecEdge;
 
-    float _Relief;
-    float _ReliefDepth;
-    float _ReliefSteps;
-    float _ReliefMin;
-    float _ReliefMax;
+    float _POM;
+    float _POMDepth;
+    float _POMSteps;
+    float _POMMin;
+    float _POMMax;
 CBUFFER_END
 
 TEXTURE2D(_BaseMap);

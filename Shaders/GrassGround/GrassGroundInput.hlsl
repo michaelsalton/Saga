@@ -1,15 +1,15 @@
 #ifndef SAGA_GRASS_GROUND_INPUT_INCLUDED
 #define SAGA_GRASS_GROUND_INPUT_INCLUDED
 
-#define SAGA_LIT_INPUT_INCLUDED
+#define SAGA_STANDARD_INPUT_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 CBUFFER_START(UnityPerMaterial)
-    // The block down to _SpecEdge mirrors LitInput.hlsl, which this file pre-empts via the
-    // SAGA_LIT_INPUT_INCLUDED define above. Shared code reads these names, so the two lists must
-    // stay in step. Relief is NOT in that set -- LitRelief.hlsl takes its height map and tuning
-    // as arguments, so Saga/Lit owns those five floats alone.
+    // The block down to _SpecEdge mirrors StandardInput.hlsl, which this file pre-empts via the
+    // SAGA_STANDARD_INPUT_INCLUDED define above. Shared code reads these names, so the two lists must
+    // stay in step. POM is NOT in that set -- StandardPOM.hlsl takes its height map and tuning
+    // as arguments, so Saga/Standard owns those five floats alone.
     float4 _BaseMap_ST;
     float4 _BaseColor;
 

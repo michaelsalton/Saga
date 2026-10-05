@@ -1,4 +1,4 @@
-Shader "Saga/Lit"
+Shader "Saga/Standard"
 {
     Properties
     {
@@ -7,7 +7,7 @@ Shader "Saga/Lit"
 
         [Header(Surface)]
         [Normal] _NormalMap ("Normal Map", 2D) = "bump" {}
-        _NormalScale ("Normal Scale", Range(0, 2)) = 1
+        _NormalScale ("Normal Scale", Range(0, 8)) = 1
         [NoScaleOffset] _ORMMap ("ORM (R=AO G=Rough B=Metal)", 2D) = "white" {}
         _Roughness ("Roughness",  Range(0, 1)) = 1
         _Metallic ("Metallic",   Range(0, 1)) = 1
@@ -18,13 +18,13 @@ Shader "Saga/Lit"
         _MetresPerTile ("Metres Per Texture Repeat", Range(0.05, 16)) = 1
         _TriplanarSharpness ("Triplanar Blend Sharpness", Range(1, 16)) = 1
 
-        [Header(Relief)]
-        [Toggle(_RELIEF)] _Relief ("Parallax Occlusion Mapping", Float) = 0
+        [Header(POM)]
+        [Toggle(_POM_ON)] _POM ("Parallax Occlusion Mapping", Float) = 0
         [NoScaleOffset] _HeightMap ("Height Map (R)", 2D) = "white" {}
-        _ReliefDepth ("Relief Depth (m under World UV, else UV)", Range(0, 0.3)) = 0
-        [IntRange] _ReliefSteps ("March Steps", Range(0, 32)) = 0
-        _ReliefMin ("Height Remap Min", Range(0, 1)) = 0
-        _ReliefMax ("Height Remap Max", Range(0, 1)) = 0
+        _POMDepth ("POM Depth (m under World UV, else UV)", Range(0, 0.3)) = 0
+        [IntRange] _POMSteps ("March Steps", Range(0, 32)) = 0
+        _POMMin ("Height Remap Min", Range(0, 1)) = 0
+        _POMMax ("Height Remap Max", Range(0, 1)) = 0
 
         [Header(Cel Shading)]
         _Bands ("Light Bands", Range(2, 8)) = 8
@@ -55,7 +55,7 @@ Shader "Saga/Lit"
         LOD 100
 
         HLSLINCLUDE
-        #include "Packages/com.saltbox.saga/Shaders/Lit/LitInput.hlsl"
+        #include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
 
         #define SAGA_OCCLUDABLE
         ENDHLSL
@@ -75,7 +75,7 @@ Shader "Saga/Lit"
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitForwardPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardForwardPass.hlsl"
             ENDHLSL
         }
 
@@ -95,7 +95,7 @@ Shader "Saga/Lit"
             HLSLPROGRAM
             #pragma vertex ShadowVert
             #pragma fragment ShadowFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitShadowCasterPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardShadowCasterPass.hlsl"
             ENDHLSL
         }
 
@@ -115,7 +115,7 @@ Shader "Saga/Lit"
             HLSLPROGRAM
             #pragma vertex DepthVert
             #pragma fragment DepthFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitDepthOnlyPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardDepthOnlyPass.hlsl"
             ENDHLSL
         }
 
@@ -134,7 +134,7 @@ Shader "Saga/Lit"
             HLSLPROGRAM
             #pragma vertex DepthNormalsVert
             #pragma fragment DepthNormalsFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitDepthNormalsPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardDepthNormalsPass.hlsl"
             ENDHLSL
         }
 
@@ -151,7 +151,7 @@ Shader "Saga/Lit"
             HLSLPROGRAM
             #pragma vertex UniversalVertexMeta
             #pragma fragment SagaFragmentMeta
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Lit/LitMetaPass.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardMetaPass.hlsl"
             ENDHLSL
         }
     }
