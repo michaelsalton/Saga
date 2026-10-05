@@ -156,4 +156,5 @@ Shader "Saga/Standard"
         }
     }
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
+    CustomEditor "Saga.Rendering.Editor.StandardShaderGUI"
 }
