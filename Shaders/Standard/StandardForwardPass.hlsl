@@ -20,6 +20,8 @@
 
 #pragma shader_feature_local_fragment _WORLD_UV
 #pragma shader_feature_local_fragment _POM_ON
+#pragma shader_feature_local_fragment _EMISSION
+#pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
 
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardLighting.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardSurface.hlsl"

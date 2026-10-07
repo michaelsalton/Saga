@@ -3,6 +3,7 @@
 
 #pragma target 2.0
 #pragma shader_feature EDITOR_VISUALIZATION
+#pragma shader_feature_local_fragment _EMISSION
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UniversalMetaPass.hlsl"
 
@@ -22,8 +23,10 @@ half4 SagaFragmentMeta(Varyings IN) : SV_TARGET
     metaInput.Albedo = albedo * (1.0h - SAGA_DIELECTRIC_F0) * (1.0h - metallic)
                      + f0 * roughness * roughness * 0.5h;
 
+#if defined(_EMISSION)
     metaInput.Emission = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, IN.uv).rgb
                        * _EmissionColor.rgb * _EmissiveIntensity;
+#endif
 
     return UniversalFragmentMeta(IN, metaInput);
 }

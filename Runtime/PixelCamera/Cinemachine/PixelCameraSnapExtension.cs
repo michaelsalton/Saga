@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Saga.Rendering
 {
     /// <summary>
-    /// DEPRECATED — inert. Camera grid-snapping moved into <see cref="PixelCameraController"/>, where it
+    /// DEPRECATED — inert. Camera grid-snapping moved into <see cref="PixelCamera"/>, where it
     /// runs at render time (begin/endCameraRendering) and works for ANY camera driver — Cinemachine, the
     /// debug fly cam, scripted shots — not just when the brain is active. Snapping here as well would
     /// double-snap and cancel the Phase-2 loss offset.

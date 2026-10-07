@@ -6,9 +6,9 @@ namespace Saga.Rendering
 {
     /// <summary>
     /// URP renderer feature that presents the pixel camera's internal RT to the screen: a single
-    /// point-sampled upscale blit, centered and integer-scaled, with letterbox bars. Add it to the URP
+    /// full-screen pixel-art upscale blit at any ratio. Add it to the URP
     /// Renderer used by the composite camera (it self-guards to only run on a camera carrying
-    /// <see cref="PixelCameraComposite"/>, so it's harmless on the world/UI cameras that share the renderer).
+    /// <see cref="PixelCamera"/>, so it's harmless on the world/UI cameras that share the renderer).
     ///
     /// Authored against RenderGraph (URP 17 / Unity 6) so later feature passes — outlines, fog, quantize —
     /// slot into the same model without a rewrite. Those later passes run on the WORLD camera at internal

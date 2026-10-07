@@ -33,7 +33,7 @@ namespace Saga.Rendering
         /// silently scales every reconstructed world position by 2.
         ///
         /// The ROTATION comes from the transform, which is safe. The ORIGIN deliberately does not: it is
-        /// <c>_WorldSpaceCameraPos</c> on the shader side, because PixelCameraController grid-snaps the
+        /// <c>_WorldSpaceCameraPos</c> on the shader side, because PixelCamera grid-snaps the
         /// camera position every frame and the global is what URP actually rendered with.
         /// </summary>
         public static void Compute(UniversalCameraData cameraData,

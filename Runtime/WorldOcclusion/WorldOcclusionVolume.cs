@@ -175,7 +175,7 @@ namespace Saga.Rendering
             }
 
             Vector3 anchor = ResolveAnchor(cam);
-            Vector3 center = PixelCameraController.SnapWorldPosition(anchor + Vector3.up * centerHeight);
+            Vector3 center = PixelCamera.SnapWorldPosition(anchor + Vector3.up * centerHeight);
 
             Shader.SetGlobalVector(CenterID, center);
             Shader.SetGlobalVector(AxisID,   cam.transform.forward);
@@ -209,7 +209,7 @@ namespace Saga.Rendering
             if (cam == null || radius <= 0.001f) return;
 
             Vector3 anchor = ResolveAnchor(cam);
-            Vector3 c   = PixelCameraController.SnapWorldPosition(anchor + Vector3.up * centerHeight);
+            Vector3 c   = PixelCamera.SnapWorldPosition(anchor + Vector3.up * centerHeight);
             Vector3 fwd = cam.transform.forward;
             Vector3 rt  = cam.transform.right;
             Vector3 up  = cam.transform.up;

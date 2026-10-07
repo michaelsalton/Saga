@@ -2,23 +2,23 @@ Shader "Saga/Standard"
 {
     Properties
     {
+        [ToggleUI] _CastShadows ("Cast Shadows", Float) = 1
+        [ToggleOff(_RECEIVE_SHADOWS_OFF)] _ReceiveShadows ("Receive Shadows", Float) = 1
+
         [MainTexture] _BaseMap ("Albedo", 2D) = "white" {}
         [MainColor] _BaseColor ("Base Color", Color) = (1.0, 1.0, 1.0, 1)
 
-        [Header(Surface)]
         [Normal] _NormalMap ("Normal Map", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 8)) = 1
         [NoScaleOffset] _ORMMap ("ORM (R=AO G=Rough B=Metal)", 2D) = "white" {}
-        _Roughness ("Roughness",  Range(0, 1)) = 1
-        _Metallic ("Metallic",   Range(0, 1)) = 1
+        _Roughness ("Roughness",  Range(0, 1)) = 0.5
+        _Metallic ("Metallic",   Range(0, 1)) = 0
         _OcclusionStrength ("Occlusion Strength", Range(0, 1)) = 1
 
-        [Header(World Space UVs)]
         [Toggle(_WORLD_UV)] _WorldUV ("World Space UVs (triplanar)", Float) = 0
         _MetresPerTile ("Metres Per Texture Repeat", Range(0.05, 16)) = 1
         _TriplanarSharpness ("Triplanar Blend Sharpness", Range(1, 16)) = 1
 
-        [Header(POM)]
         [Toggle(_POM_ON)] _POM ("Parallax Occlusion Mapping", Float) = 0
         [NoScaleOffset] _HeightMap ("Height Map (R)", 2D) = "white" {}
         _POMDepth ("POM Depth (m under World UV, else UV)", Range(0, 0.3)) = 0
@@ -26,24 +26,7 @@ Shader "Saga/Standard"
         _POMMin ("Height Remap Min", Range(0, 1)) = 0
         _POMMax ("Height Remap Max", Range(0, 1)) = 0
 
-        [Header(Cel Shading)]
-        _Bands ("Light Bands", Range(2, 8)) = 8
-        _ShadowTint ("Shadow Tint", Color) = (1.0, 1.0, 1.0, 1)
-        _NdlWrap ("N dot L Wrap", Range(0, 1)) = 1
-        _AddLightBands ("Additional Light Bands", Range(1, 8)) = 8
-        _BandSoftness ("Band Softness", Range(0, 1)) = 1
-        _BandShadow ("Band the Shadow", Range(0, 1)) = 1
-        [IntRange] _GIBands ("Baked GI Bands (0 = smooth)", Range(0, 8)) = 0
-        _GIRange ("GI Range (irradiance at top band)", Range(0.05, 4)) = 4
-
-        [Header(Specular)]
-        [HDR] _SpecColor ("Specular Color", Color) = (1.0, 1.0, 1.0, 1)
-        _SpecIntensity ("Intensity (1 = physical, 25 = mirror)", Range(0, 25)) = 0
-        _SpecCutoffSmooth ("Smooth Cutoff", Range(0.5, 1)) = 0.5
-        _SpecCutoffRough ("Rough Cutoff", Range(0, 1)) = 0
-        _SpecEdge ("Edge Softness", Range(0, 0.25)) = 0
-
-        [Header(Emissive)]
+        [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0
         [NoScaleOffset] _EmissiveMap ("Emissive Map", 2D) = "white" {}
         [HDR] _EmissionColor ("Emission Color", Color) = (0, 0, 0, 1)
         _EmissiveIntensity ("Emissive Intensity", Range(0, 8)) = 0
@@ -61,7 +44,7 @@ Shader "Saga/Standard"
         ENDHLSL
 
         // --------------------------------------------------------------
-        // Forward lit — full PBR material, ramp-stylized main light
+        // Forward lit — full PBR material, ramp-stylized lighting
         // --------------------------------------------------------------
         Pass
         {
@@ -100,7 +83,7 @@ Shader "Saga/Standard"
         }
 
         // --------------------------------------------------------------
-        // DepthOnly — load-bearing, see the pass file
+        // DepthOnly
         // --------------------------------------------------------------
         Pass
         {
@@ -120,7 +103,7 @@ Shader "Saga/Standard"
         }
 
         // --------------------------------------------------------------
-        // DepthNormals — behaviour no-op today, see the pass file
+        // DepthNormals
         // --------------------------------------------------------------
         Pass
         {
@@ -139,7 +122,7 @@ Shader "Saga/Standard"
         }
 
         // --------------------------------------------------------------
-        // Meta — bake-time only
+        // Meta
         // --------------------------------------------------------------
         Pass
         {

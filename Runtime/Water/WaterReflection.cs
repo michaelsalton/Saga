@@ -143,7 +143,7 @@ namespace Saga.Rendering
         {
             if (camera != reflCam || mainCam == null) return;
 
-            // Sized here, not in LateUpdate: PixelCameraController rebuilds the internal RT in ITS
+            // Sized here, not in LateUpdate: PixelCamera rebuilds the internal RT in ITS
             // LateUpdate, and the ordering between the two is undefined.
             EnsureRT();
             if (rt == null) return;
@@ -152,7 +152,7 @@ namespace Saga.Rendering
                 flipV ? new Vector4(1f, -1f, 0f, 1f) : new Vector4(1f, 1f, 0f, 0f));
 
             // Grid-lock: mirror the SNAPPED position. No-ops cleanly in scenes with no pixel rig.
-            Vector3 mainPos = PixelCameraController.SnapWorldPosition(mainCam.transform.position);
+            Vector3 mainPos = PixelCamera.SnapWorldPosition(mainCam.transform.position);
             float planeY = ResolvePlaneY();
 
             // Position only, no rotation: a mirror basis is left-handed and no Quaternion can express it,
@@ -312,8 +312,8 @@ namespace Saga.Rendering
 
         void EnsureRT()
         {
-            int srcW = PixelCameraController.InternalWidth  > 0 ? PixelCameraController.InternalWidth  : Screen.width;
-            int srcH = PixelCameraController.InternalHeight > 0 ? PixelCameraController.InternalHeight : Screen.height;
+            int srcW = PixelCamera.InternalWidth  > 0 ? PixelCamera.InternalWidth  : Screen.width;
+            int srcH = PixelCamera.InternalHeight > 0 ? PixelCamera.InternalHeight : Screen.height;
 
             int div = Mathf.Max(1, resolutionDivisor);
             int w = Mathf.Max(16, srcW / div);

@@ -18,24 +18,8 @@ Shader "Saga/GrassGround"
         _MetresPerTile ("Metres Per Texture Repeat", Range(0.05, 16)) = 1
         _TriplanarSharpness ("Triplanar Blend Sharpness", Range(1, 16)) = 6
 
-        [Header(Cel Shading)]
-        _Bands ("Light Bands", Range(2, 8)) = 2
-        _ShadowTint ("Shadow Tint", Color) = (0.5, 0.55, 0.65, 1)
-        _NdlWrap ("N dot L Wrap", Range(0, 1)) = 1
-        _AddLightBands ("Additional Light Bands", Range(1, 8)) = 3
-        _BandSoftness ("Band Softness", Range(0, 1)) = 0
-        _BandShadow ("Band the Shadow", Range(0, 1)) = 0
-        [IntRange] _GIBands ("Baked GI Bands (0 = smooth)", Range(0, 8)) = 0
-        _GIRange ("GI Range (irradiance at top band)", Range(0.05, 4)) = 0.5
-
-        [Header(Specular)]
-        [HDR] _SpecColor ("Specular Color", Color) = (1, 1, 1, 1)
-        _SpecIntensity ("Intensity (1 = physical, 25 = mirror)", Range(0, 25)) = 25
-        _SpecCutoffSmooth ("Smooth Cutoff", Range(0.5, 1)) = 0.98
-        _SpecCutoffRough ("Rough Cutoff", Range(0, 1)) = 0.5
-        _SpecEdge ("Edge Softness", Range(0, 0.25)) = 0.02
-
         [Header(Emissive)]
+        [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0
         [NoScaleOffset] _EmissiveMap ("Emissive Map", 2D) = "white" {}
         [HDR] _EmissionColor ("Emission Color", Color) = (0, 0, 0, 1)
         _EmissiveIntensity ("Emissive Intensity", Range(0, 8)) = 1

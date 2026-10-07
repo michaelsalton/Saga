@@ -6,7 +6,7 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 CBUFFER_START(UnityPerMaterial)
-    // The block down to _SpecEdge mirrors StandardInput.hlsl, which this file pre-empts via the
+    // The block down to _TriplanarSharpness mirrors StandardInput.hlsl, which this file pre-empts via the
     // SAGA_STANDARD_INPUT_INCLUDED define above. Shared code reads these names, so the two lists must
     // stay in step. POM is NOT in that set -- StandardPOM.hlsl takes its height map and tuning
     // as arguments, so Saga/Standard owns those five floats alone.
@@ -23,24 +23,9 @@ CBUFFER_START(UnityPerMaterial)
     float4 _EmissionColor;
     float _EmissiveIntensity;
 
-    float _Bands;
-    float4 _ShadowTint;
-    float _NdlWrap;
-    float _AddLightBands;
-    float _BandSoftness;   // gradient width as a fraction of one band; 0 = hard cel
-    float _BandShadow;     // 0 = occlusion multiplies after quantizing (old), 1 = inside it
-    float _GIBands;        // quantize baked GI / ambient into N levels; 0 = off (smooth, as before)
-    float _GIRange;        // irradiance that maps to the top GI band -- lower it if spill vanishes
-
     float _WorldUV;
     float _MetresPerTile;
     float _TriplanarSharpness;
-
-    float4 _SpecColor;
-    float _SpecIntensity;
-    float _SpecCutoffSmooth;
-    float _SpecCutoffRough;
-    float _SpecEdge;
 
     float _PatchCount;
 

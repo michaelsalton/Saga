@@ -94,7 +94,11 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
 
     baseMap    = SagaTriplanar(TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap), tuv, w);
     orm        = SagaTriplanar(TEXTURE2D_ARGS(_ORMMap, sampler_ORMMap), tuv, w).rgb;
+#if defined(_EMISSION)
     s.emissive = SagaTriplanar(TEXTURE2D_ARGS(_EmissiveMap, sampler_EmissiveMap), tuv, w).rgb;
+#else
+    s.emissive = 0.0h;
+#endif
 
     s.normalWS = SagaTriplanarNormal(tuv, w, nGeomWS);
 #else
@@ -115,7 +119,11 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
 
     baseMap    = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);
     orm        = SAMPLE_TEXTURE2D(_ORMMap, sampler_ORMMap, uv).rgb;
+#if defined(_EMISSION)
     s.emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
+#else
+    s.emissive = 0.0h;
+#endif
 
     half3 normalTS = UnpackNormalScale(
         SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), half(_NormalScale));
