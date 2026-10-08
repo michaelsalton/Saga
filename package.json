@@ -8,6 +8,7 @@
     "name": "Saltbox"
   },
   "dependencies": {
-    "com.unity.render-pipelines.universal": "17.4.0"
+    "com.unity.render-pipelines.universal": "17.4.0",
+    "com.unity.inputsystem": "1.19.0"
   }
 }

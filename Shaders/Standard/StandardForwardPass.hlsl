@@ -26,10 +26,6 @@
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardLighting.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardSurface.hlsl"
 
-#ifdef SAGA_OCCLUDABLE
-#include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
-#endif
-
 #ifndef SAGA_MODIFY_SURFACE
 #define SAGA_MODIFY_SURFACE(surf, positionWS)
 #endif
@@ -123,10 +119,6 @@ half4 Frag(Varyings IN) : SV_TARGET
     col += surf.emissive;
 
     col = MixFog(col, IN.fogFactor);
-
-#ifdef SAGA_OCCLUDABLE
-    SagaOcclusionClip(SagaOcclusionMask(IN.positionWS), IN.positionHCS.xy);
-#endif
 
     return half4(col, 1.0h);
 }

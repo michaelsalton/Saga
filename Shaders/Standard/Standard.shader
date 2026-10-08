@@ -39,8 +39,6 @@ Shader "Saga/Standard"
 
         HLSLINCLUDE
         #include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
-
-        #define SAGA_OCCLUDABLE
         ENDHLSL
 
         // --------------------------------------------------------------

@@ -3,10 +3,6 @@
 
 #pragma multi_compile_instancing
 
-#ifdef SAGA_OCCLUDABLE
-#include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
-#endif
-
 struct Attributes
 {
     float4 positionOS : POSITION;
@@ -18,9 +14,6 @@ struct Varyings
 {
     float4 positionHCS : SV_POSITION;
     half3  normalWS : TEXCOORD0;
-#ifdef SAGA_OCCLUDABLE
-    float3 positionWS : TEXCOORD1;
-#endif
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -33,9 +26,6 @@ Varyings DepthNormalsVert(Attributes IN)
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
     OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
     OUT.normalWS = half3(TransformObjectToWorldNormal(IN.normalOS));
-#ifdef SAGA_OCCLUDABLE
-    OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
-#endif
     return OUT;
 }
 
@@ -43,9 +33,6 @@ half4 DepthNormalsFrag(Varyings IN) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
-#ifdef SAGA_OCCLUDABLE
-    SagaOcclusionClip(SagaOcclusionMask(IN.positionWS), IN.positionHCS.xy);
-#endif
     return half4(NormalizeNormalPerPixel(IN.normalWS), 0.0h);
 }
 

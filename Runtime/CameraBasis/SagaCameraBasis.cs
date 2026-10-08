@@ -12,8 +12,8 @@ namespace Saga.Rendering
     ///
     /// Every pass that reconstructs a world position must publish the basis ITSELF — either with
     /// <see cref="Bind"/> (globals, for a pass that already modifies global state) or with
-    /// <see cref="Apply"/> (onto its own material). GodrayPass and OutlinePass share
-    /// <c>RenderPassEvent.AfterRenderingTransparents</c>, so neither can assume the other ran first.
+    /// <see cref="Apply"/> (onto its own material). Passes sharing an injection point cannot assume
+    /// which one ran first.
     /// </summary>
     public static class SagaCameraBasis
     {

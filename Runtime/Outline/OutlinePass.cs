@@ -73,9 +73,8 @@ namespace Saga.Rendering
 
             if (lit)
             {
-                // Published onto our OWN material rather than as globals. GodrayPass shares this
-                // injection point and publishes the identical basis globally; keeping ours local means
-                // the two can never race on renderer-asset ordering. See Core/SagaCameraBasis.cs.
+                // Published onto our OWN material rather than as globals, so another pass at this
+                // injection point can never race us on renderer-asset ordering. See Core/SagaCameraBasis.cs.
                 SagaCameraBasis.Compute(cameraData, out var camRight, out var camUp, out var camFwd);
                 SagaCameraBasis.Apply(material, camRight, camUp, camFwd);
             }
@@ -90,8 +89,7 @@ namespace Saga.Rendering
 
             // Explicit dependency on the shadow map, so it is scheduled and kept alive this far into the
             // frame. UseAllGlobalTextures below would cover it (URP registers _MainLightShadowmapTexture
-            // via SetGlobalTextureAfterPass), but naming it is what GodrayPass does and it makes the
-            // requirement legible. Invalid whenever the main light casts no shadows — the shader's
+            // via SetGlobalTextureAfterPass), but naming it makes the requirement legible. Invalid whenever the main light casts no shadows — the shader's
             // keyword variant then has no MAIN_LIGHT_CALCULATE_SHADOWS and simply reads 1.
             if (resourceData.mainShadowsTexture.IsValid())
                 builder.UseTexture(resourceData.mainShadowsTexture, AccessFlags.Read);

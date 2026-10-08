@@ -21,10 +21,9 @@ Shader "Saga/Outline"
             // Main light shadows, so a line can be shaded by whatever shades the surface it traces.
             // _SHADOWS_SOFT is declared to MATCH StandardForwardPass.hlsl:4-7 exactly -- same keyword set
             // means the same filtering code path, which is what guarantees the line and the surface
-            // never disagree along a terminator. (Godrays omit it on purpose; PCF-filtering a point in
-            // mid-air is meaningless. Here the tap lands on a real surface, so it must match.)
+            // never disagree along a terminator.
             //
-            // _MAIN_LIGHT_SHADOWS_SCREEN is deliberately NOT declared, following Godray.shader:18. That
+            // _MAIN_LIGHT_SHADOWS_SCREEN is deliberately NOT declared. That
             // path routes TransformWorldToShadowCoord through GetWorldToHClipMatrix(), and this file's
             // whole premise is that camera matrices are not dependable inside a Blitter pass. No
             // ScreenSpaceShadows feature exists on PC_Renderer today; if one is ever added, this variant
@@ -39,7 +38,6 @@ Shader "Saga/Outline"
             #include "Packages/com.saltbox.saga/ShaderLibrary/Depth.hlsl"
             #include "Packages/com.saltbox.saga/ShaderLibrary/CameraBasis.hlsl"
             #include "Packages/com.saltbox.saga/ShaderLibrary/CloudShadows.hlsl"
-            #include "Packages/com.saltbox.saga/ShaderLibrary/WorldOcclusion.hlsl"
 
             half4  _OutlineColor;     // line color (rgb) + opacity (a); e.g. (1,1,1,1) = opaque white line
             float  _DepthThreshold;   // world-unit depth gap (slope-aware) counting as a silhouette
@@ -122,28 +120,6 @@ Shader "Saga/Outline"
                 // comparison sample, the cloud field is procedural noise).
                 if (edge <= 0.0)
                     return half4(0.0h, 0.0h, 0.0h, 0.0h);
-
-                // World occlusion. The cutout's dither stipple alternates prop depth and background
-                // depth on ADJACENT pixels, so the kernel above fires almost everywhere inside the
-                // disc and would fill it with solid ink. Mute it there.
-                //
-                // SagaOcclusionDisc, NOT SagaOcclusionMask: the radial term without the depth gate.
-                // posWS is reconstructed from the DEPTH BUFFER, which inside the cut holds prop depth
-                // on kept pixels and background depth on discarded ones -- opposite depth-gate
-                // results, but identical radial values, because r is constant along a view ray under
-                // ortho. The full mask would flicker between neighbouring pixels; this cannot. And
-                // because the term falls to 0 at the rim, it LEAVES a line framing the hole while
-                // killing the interior noise.
-                //
-                // Both operands are uniforms, so this is a free scalar jump when the feature is off,
-                // and the duplicated world reconstruction only costs the edge texels inside the disc.
-                [branch] if (_OccOutlineSuppress > 0.0 && _OccRadius > 0.001)
-                {
-                    edge *= 1.0 - saturate(_OccOutlineSuppress *
-                                           (float)SagaOcclusionDisc(SagaCameraWorldPos(uv, eC)));
-                    if (edge <= 0.0)
-                        return half4(0.0h, 0.0h, 0.0h, 0.0h);
-                }
 
                 half3 lineRGB = _OutlineColor.rgb;
 
