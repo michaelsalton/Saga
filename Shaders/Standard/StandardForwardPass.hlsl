@@ -16,13 +16,22 @@
 #pragma multi_compile _ SHADOWS_SHADOWMASK
 #pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX
 #pragma multi_compile_fragment _ LIGHTMAP_BICUBIC_SAMPLING
-#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
+#pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+#pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
 
 #pragma shader_feature_local_fragment _WORLD_UV
 #pragma shader_feature_local_fragment _POM_ON
 #pragma shader_feature_local_fragment _EMISSION
 #pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
+#pragma shader_feature_local_fragment _SURFACE_TYPE_TRANSPARENT
+#pragma shader_feature_local_fragment _DETAIL
+#pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+#pragma shader_feature_local_fragment _ALPHATEST_ON
+#pragma shader_feature_local_fragment _SPECULAR_AA_OFF
+#pragma shader_feature_local_fragment _MULTISCATTER_OFF
+#pragma shader_feature_local_fragment _ENERGY_BALANCE_OFF
 
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardLighting.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardSurface.hlsl"
 
@@ -90,10 +99,14 @@ half4 Frag(Varyings IN) : SV_TARGET
 
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(IN.positionWS);
 
+    SagaAlphaClip(IN.uv);
+    
     SagaSurface surf = SagaSampleSurface(IN.uv, IN.positionWS, IN.normalWS, IN.tangentWS, viewDirWS);
 
     SAGA_MODIFY_SURFACE(surf, IN.positionWS);
-
+    #if !defined(_SPECULAR_AA_OFF)
+        surf.roughness = SagaSpecularAA(surf.roughness, surf.normalWS);
+    #endif
     InputData inputData  = (InputData)0;
     inputData.positionWS  = IN.positionWS;
     inputData.normalWS = surf.normalWS;
@@ -114,13 +127,22 @@ half4 Frag(Varyings IN) : SV_TARGET
     inputData.shadowMask = SAMPLE_SHADOWMASK(IN.staticLightmapUV);
 #endif
 
+    #if !defined(_SPECULAR_AA_OFF)
+        surf.roughness = SagaSpecularAA(surf.roughness, surf.normalWS);
+    #endif
+
     half3 col = SagaStandardLighting(inputData, surf.albedo, surf.metallic, surf.roughness, surf.ao);
 
     col += surf.emissive;
 
     col = MixFog(col, IN.fogFactor);
 
-    return half4(col, 1.0h);
-}
+    #if defined(_SURFACE_TYPE_TRANSPARENT)
+        half alpha = surf.alpha;
+    #else
+        half alpha = 1.0h;
+    #endif
 
+        return half4(col, alpha);
+    }
 #endif

@@ -5,7 +5,15 @@ Shader "Saga/Standard"
         [ToggleUI] _CastShadows ("Cast Shadows", Float) = 1
         [ToggleOff(_RECEIVE_SHADOWS_OFF)] _ReceiveShadows ("Receive Shadows", Float) = 1
 
-        [MainTexture] _BaseMap ("Albedo", 2D) = "white" {}
+        [Enum(Opaque, 0, Transparent, 1)] _Surface ("Surface Type", Float) = 0
+        [Enum(Front, 2, Back, 1, Both, 0)] _Cull ("Render Face", Float) = 2
+        [HideInInspector] _SrcBlend ("Src Blend", Float) = 1
+        [HideInInspector] _DstBlend ("Dst Blend", Float) = 0
+        [HideInInspector] _ZWrite ("ZWrite", Float) = 1
+        [Toggle(_ALPHATEST_ON)] _AlphaClip ("Alpha Clipping", Float) = 0
+        _Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
+
+        [MainTexture] _BaseMap ("Base Map", 2D) = "white" {}
         [MainColor] _BaseColor ("Base Color", Color) = (1.0, 1.0, 1.0, 1)
 
         [Normal] _NormalMap ("Normal Map", 2D) = "bump" {}
@@ -14,6 +22,16 @@ Shader "Saga/Standard"
         _Roughness ("Roughness",  Range(0, 1)) = 0.5
         _Metallic ("Metallic",   Range(0, 1)) = 0
         _OcclusionStrength ("Occlusion Strength", Range(0, 1)) = 1
+
+        [ToggleOff(_SPECULAR_AA_OFF)] _SpecularAA ("Specular Anti-Aliasing", Float) = 1
+        [ToggleOff(_MULTISCATTER_OFF)] _MultiScatter ("Multiple Scattering Compensation", Float) = 1
+        [ToggleOff(_ENERGY_BALANCE_OFF)] _EnergyBalance ("Diffuse/Specular Energy Balance", Float) = 1
+
+        _DetailMask ("Detail Mask (A)", 2D) = "white" {}
+        _DetailAlbedoMap ("Detail Albedo", 2D) = "linearGrey" {}
+        _DetailAlbedoMapScale ("Detail Albedo Scale", Range(0, 2)) = 1
+        [Normal] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" {}
+        _DetailNormalMapScale ("Detail Normal Scale", Range(0, 8)) = 1
 
         [Toggle(_WORLD_UV)] _WorldUV ("World Space UVs (triplanar)", Float) = 0
         _MetresPerTile ("Metres Per Texture Repeat", Range(0.05, 16)) = 1
@@ -25,6 +43,8 @@ Shader "Saga/Standard"
         [IntRange] _POMSteps ("March Steps", Range(0, 32)) = 0
         _POMMin ("Height Remap Min", Range(0, 1)) = 0
         _POMMax ("Height Remap Max", Range(0, 1)) = 0
+
+        [ToggleOff] _EnvironmentReflections ("Environment Reflections", Float) = 1
 
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0
         [NoScaleOffset] _EmissiveMap ("Emissive Map", 2D) = "white" {}
@@ -42,16 +62,17 @@ Shader "Saga/Standard"
         ENDHLSL
 
         // --------------------------------------------------------------
-        // Forward lit — full PBR material, ramp-stylized lighting
+        // Forward lit — full PBR material
         // --------------------------------------------------------------
         Pass
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
 
-            ZWrite On
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
             ZTest LEqual
-            Cull Back
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma vertex Vert

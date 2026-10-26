@@ -4,6 +4,8 @@
 #pragma multi_compile_instancing
 #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
+#pragma shader_feature_local_fragment _ALPHATEST_ON
+
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
 float3 _LightDirection;
@@ -13,12 +15,14 @@ struct Attributes
 {
     float4 positionOS : POSITION;
     float3 normalOS : NORMAL;
+    float2 uv : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct Varyings
 {
     float4 positionHCS : SV_POSITION;
+    float2 uv : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -49,11 +53,13 @@ Varyings ShadowVert(Attributes IN)
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
     OUT.positionHCS = GetShadowPositionHClip(IN);
+    OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
     return OUT;
 }
 
 half4 ShadowFrag(Varyings IN) : SV_TARGET
 {
+    SagaAlphaClip(IN.uv);
     return 0;
 }
 

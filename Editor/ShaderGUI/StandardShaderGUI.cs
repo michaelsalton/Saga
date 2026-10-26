@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Saga.Rendering.Editor
 {
@@ -16,6 +17,10 @@ namespace Saga.Rendering.Editor
             WorldUV = 1 << 2,
             POM = 1 << 3,
             Emission = 1 << 4,
+            Detail = 1 << 5,
+            Reflections = 1 << 6,
+            AA = 1 << 7,
+            Quality = 1 << 8,
         }
 
         readonly MaterialHeaderScopeList headers = new MaterialHeaderScopeList(uint.MaxValue);
@@ -33,9 +38,13 @@ namespace Saga.Rendering.Editor
             {
                 headers.RegisterHeaderScope(new GUIContent("Surface Options"), (uint)Expandable.SurfaceOptions, DrawSurfaceOptions);
                 headers.RegisterHeaderScope(new GUIContent("Surface Inputs"), (uint)Expandable.SurfaceInputs, DrawSurfaceInputs);
+                headers.RegisterHeaderScope(new GUIContent("Detail Inputs"), (uint)Expandable.Detail, DrawDetailInputs);
                 headers.RegisterHeaderScope(new GUIContent("World Space UVs"), (uint)Expandable.WorldUV, DrawWorldUV);
+                headers.RegisterHeaderScope(new GUIContent("Anti-Aliasing"), (uint)Expandable.AA, DrawAA);
                 headers.RegisterHeaderScope(new GUIContent("Parallax Occlusion Mapping"), (uint)Expandable.POM, DrawPOM);
+                headers.RegisterHeaderScope(new GUIContent("Reflections"), (uint)Expandable.Reflections, DrawReflections);
                 headers.RegisterHeaderScope(new GUIContent("Emission"), (uint)Expandable.Emission, DrawEmission);
+                headers.RegisterHeaderScope(new GUIContent("Quality Settings"), (uint)Expandable.Quality, DrawQuality);
                 headersRegistered = true;
             }
 
@@ -61,6 +70,15 @@ namespace Saga.Rendering.Editor
 
         void DrawSurfaceOptions(Material material)
         {
+            DrawProperty("_Surface");
+            DrawProperty("_AlphaClip");
+            if (IsEnabled("_AlphaClip"))
+            {
+                EditorGUI.indentLevel++;
+                DrawProperty("_Cutoff");
+                EditorGUI.indentLevel--;
+            }
+            DrawProperty("_Cull");
             DrawProperty("_CastShadows");
             DrawProperty("_ReceiveShadows");
         }
@@ -68,7 +86,7 @@ namespace Saga.Rendering.Editor
         void DrawSurfaceInputs(Material material)
         {
             MaterialProperty baseMap = FindProperty("_BaseMap", properties);
-            materialEditor.TexturePropertySingleLine(new GUIContent("Albedo"), baseMap, FindProperty("_BaseColor", properties));
+            materialEditor.TexturePropertySingleLine(new GUIContent("Base Map"), baseMap, FindProperty("_BaseColor", properties));
             materialEditor.TexturePropertySingleLine(new GUIContent("Normal Map"), FindProperty("_NormalMap", properties), FindProperty("_NormalScale", properties));
             materialEditor.TexturePropertySingleLine(new GUIContent("ORM"), FindProperty("_ORMMap", properties));
             DrawProperty("_Roughness");
@@ -81,6 +99,16 @@ namespace Saga.Rendering.Editor
                 materialEditor.TextureScaleOffsetProperty(baseMap);
         }
 
+        void DrawDetailInputs(Material material)
+        {
+            materialEditor.TexturePropertySingleLine(new GUIContent("Mask"), FindProperty("_DetailMask", properties));
+            MaterialProperty detailAlbedo = FindProperty("_DetailAlbedoMap", properties);
+            materialEditor.TexturePropertySingleLine(new GUIContent("Base Map"), detailAlbedo, FindProperty("_DetailAlbedoMapScale", properties));
+            materialEditor.TexturePropertySingleLine(new GUIContent("Normal Map"), FindProperty("_DetailNormalMap", properties), FindProperty("_DetailNormalMapScale", properties));
+            materialEditor.TextureScaleOffsetProperty(detailAlbedo);
+        }
+
+
         void DrawWorldUV(Material material)
         {
             DrawProperty("_WorldUV");
@@ -91,6 +119,11 @@ namespace Saga.Rendering.Editor
             DrawProperty("_MetresPerTile");
             DrawProperty("_TriplanarSharpness");
             EditorGUI.indentLevel--;
+        }
+
+        void DrawAA(Material material)
+        {
+            DrawProperty("_SpecularAA");
         }
 
         void DrawPOM(Material material)
@@ -108,6 +141,11 @@ namespace Saga.Rendering.Editor
             EditorGUI.indentLevel--;
         }
 
+        void DrawReflections(Material material)
+        {
+            DrawProperty("_EnvironmentReflections");
+        }
+
         void DrawEmission(Material material)
         {
             DrawProperty("_Emission");
@@ -123,6 +161,12 @@ namespace Saga.Rendering.Editor
             EditorGUI.indentLevel--;
         }
 
+        void DrawQuality(Material material)
+        {
+            DrawProperty("_MultiScatter");
+            DrawProperty("_EnergyBalance");
+        }
+
         public override void ValidateMaterial(Material material)
         {
             MaterialGlobalIlluminationFlags flags = material.globalIlluminationFlags;
@@ -133,8 +177,27 @@ namespace Saga.Rendering.Editor
                 flags |= MaterialGlobalIlluminationFlags.EmissiveIsBlack;
             material.globalIlluminationFlags = flags;
 
+            // no checkbox: assigning either map is the switch
+            bool hasDetail = material.GetTexture("_DetailAlbedoMap") != null || material.GetTexture("_DetailNormalMap") != null;
+            if (hasDetail)
+                material.EnableKeyword("_DETAIL");
+            else
+                material.DisableKeyword("_DETAIL");
+
             // URP's shadow-map pass skips any material whose ShadowCaster pass is disabled
             material.SetShaderPassEnabled("ShadowCaster", material.GetFloat("_CastShadows") > 0.5f);
+
+            bool transparent = material.GetFloat("_Surface") > 0.5f;
+            material.SetFloat("_DstBlend", (float)(transparent ? BlendMode.OneMinusSrcAlpha : BlendMode.Zero));
+            material.SetFloat("_ZWrite", transparent ? 0f : 1f);
+            bool alphaClip = material.GetFloat("_AlphaClip") > 0.5f;
+            RenderQueue queue = transparent ? RenderQueue.Transparent : alphaClip ? RenderQueue.AlphaTest : RenderQueue.Geometry;
+            material.SetOverrideTag("RenderType", transparent ? "Transparent" : alphaClip ? "TransparentCutout" : "Opaque");
+
+            if (transparent)
+                material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            else
+                material.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
         }
     }
 }

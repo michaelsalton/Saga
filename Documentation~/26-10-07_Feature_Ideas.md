@@ -6,6 +6,20 @@ Ideas, not commitments. Ordered roughly by how much each one pays back for the e
 Suggested starting order: **lighting debug views** first (it makes everything after it debuggable), then
 **perspective-correct depth** (a prerequisite for most screen-space work now that the camera isn't ortho).
 
+## Things to add to Standard shader
+
+- Horizon occlusion
+- Specular occlusion
+
+## Material Extensions
+
+- Clearcoat: Thing glossy layer over a base material (car paint, lacquered wood, wet surfaces)
+- Sheen: Retroreflective fibres that glow at grazing angles (cloth, velvet, dusty surfaces)
+- Anisotropy: Highlights stretched along one direction (brushed metal, hair, vinyl records)
+- Transmission / thin translucency: Light passing through thin surfaces (leaves, papers, lampshades)
+- Subsurface scattering: Light diffusing under the surface (skin, wax, marble)
+- Specular / IOR control: Tuning dieletric away from the fixed 0.04 (gems, water-like plastics, fixing too-bright fabrics)
+
 ## Debug and look-dev tools
 
 ### Lighting debug views

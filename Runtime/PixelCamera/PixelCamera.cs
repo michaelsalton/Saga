@@ -66,7 +66,6 @@ namespace Saga.Rendering
             presentCamera.clearFlags = CameraClearFlags.Nothing;
             presentCamera.orthographic = true;
             presentCamera.enabled = true;
-            activeWorldCamera.orthographic = true;
 
             Active = this;
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
@@ -147,7 +146,8 @@ namespace Saga.Rendering
 
             // world height of one RT pixel, recomputed each call so it tracks ortho zoom and RT rebuilds
             float unitsPerPixel = (activeWorldCamera != null && builtHeight > 0) ? (activeWorldCamera.orthographicSize * 2f) / builtHeight : 0f;
-            if (!enableSnapping || unitsPerPixel <= 0f) return position;
+            // a perspective camera shifts near and far objects by different pixel amounts, so no single snap step grid-locks the frame
+            if (!enableSnapping || unitsPerPixel <= 0f || !activeWorldCamera.orthographic) return position;
 
             // the pixel grid lies in the view plane, so snap along camera right/up; world-axis snapping still crawls
             Vector3 right = activeWorldCamera.transform.right;

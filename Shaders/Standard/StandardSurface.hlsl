@@ -3,10 +3,12 @@
 
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardPOM.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 
 struct SagaSurface
 {
     half3 albedo;
+    half alpha;
     half3 normalWS;
     half  roughness;
     half  metallic;
@@ -71,8 +73,8 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
 
 #if defined(_POM_ON)
     SagaPOMParams pom;
-    pom.depth    = _POMDepth * rcp(max(_MetresPerTile, 1e-4));
-    pom.steps    = _POMSteps;
+    pom.depth = _POMDepth * rcp(max(_MetresPerTile, 1e-4));
+    pom.steps = _POMSteps;
     pom.remapMin = _POMMin;
     pom.remapMax = _POMMax;
 
@@ -92,8 +94,8 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
                               tuv.z, float3(viewDirWS.x, viewDirWS.y, viewDirWS.z * sgn.z), dxZ, dyZ);
 #endif
 
-    baseMap    = SagaTriplanar(TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap), tuv, w);
-    orm        = SagaTriplanar(TEXTURE2D_ARGS(_ORMMap, sampler_ORMMap), tuv, w).rgb;
+    baseMap = SagaTriplanar(TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap), tuv, w);
+    orm = SagaTriplanar(TEXTURE2D_ARGS(_ORMMap, sampler_ORMMap), tuv, w).rgb;
 #if defined(_EMISSION)
     s.emissive = SagaTriplanar(TEXTURE2D_ARGS(_EmissiveMap, sampler_EmissiveMap), tuv, w).rgb;
 #else
@@ -108,8 +110,8 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
 
 #if defined(_POM_ON)
     SagaPOMParams pom;
-    pom.depth    = _POMDepth;
-    pom.steps    = _POMSteps;
+    pom.depth = _POMDepth;
+    pom.steps = _POMSteps;
     pom.remapMin = _POMMin;
     pom.remapMax = _POMMax;
 
@@ -117,8 +119,8 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
                        uv, mul(tbn, viewDirWS), ddx(uv), ddy(uv));
 #endif
 
-    baseMap    = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);
-    orm        = SAMPLE_TEXTURE2D(_ORMMap, sampler_ORMMap, uv).rgb;
+    baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);
+    orm = SAMPLE_TEXTURE2D(_ORMMap, sampler_ORMMap, uv).rgb;
 #if defined(_EMISSION)
     s.emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
 #else
@@ -128,13 +130,27 @@ SagaSurface SagaSampleSurface(float2 uv, float3 positionWS, half3 normalWS, half
     half3 normalTS = UnpackNormalScale(
         SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), half(_NormalScale));
 
+#if defined(_DETAIL)
+    half detailMask = SAMPLE_TEXTURE2D(_DetailMask, sampler_DetailMask, uv).a;
+    float2 detailUV = uv * _DetailAlbedoMap_ST.xy + _DetailAlbedoMap_ST.zw;
+
+    half3 detailAlbedo = SAMPLE_TEXTURE2D(_DetailAlbedoMap, sampler_DetailAlbedoMap, detailUV).rgb;
+    detailAlbedo = lerp(1.0h, 2.0h * detailAlbedo, half(_DetailAlbedoMapScale));
+    baseMap.rgb *= lerp(1.0h, detailAlbedo, detailMask);
+
+    half3 detailNormalTS = normalize(UnpackNormalScale(
+        SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailNormalMap, detailUV), half(_DetailNormalMapScale)));
+    normalTS = lerp(normalTS, BlendNormalRNM(normalTS, detailNormalTS), detailMask);
+#endif
+
     s.normalWS = normalize(TransformTangentToWorld(normalTS, tbn));
 #endif
 
-    s.albedo    = baseMap.rgb * _BaseColor.rgb;
-    s.ao        = lerp(1.0h, orm.r, half(_OcclusionStrength));
+    s.albedo = baseMap.rgb * _BaseColor.rgb;
+    s.alpha = baseMap.a * _BaseColor.a;
+    s.ao = lerp(1.0h, orm.r, half(_OcclusionStrength));
     s.roughness = saturate(orm.g * half(_Roughness));
-    s.metallic  = saturate(orm.b * half(_Metallic));
+    s.metallic = saturate(orm.b * half(_Metallic));
     s.emissive *= _EmissionColor.rgb * half(_EmissiveIntensity);
 
     return s;
