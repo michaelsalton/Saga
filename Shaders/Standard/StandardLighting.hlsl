@@ -26,7 +26,7 @@ half3 SagaDirectBRDF(half3 N, half3 V, Light light, half3 diffuseAlbedo, half3 f
     return (diffuseAlbedo + specular) * radiance;
 }
 
-half3 SagaStandardLighting(InputData inputData, half3 albedo, half metallic, half perceptualRoughness, half ao)
+half3 SagaStandardLighting(InputData inputData, half3 geometricNormalWS, half3 albedo, half metallic, half perceptualRoughness, half ao)
 {
     half3 N = inputData.normalWS;
     half3 V = inputData.viewDirectionWS;
@@ -68,7 +68,12 @@ half3 SagaStandardLighting(InputData inputData, half3 albedo, half metallic, hal
     col += inputData.bakedGI * ambientDiffuseAlbedo * ao;
 
     half3 reflectDir = reflect(-V, N);
-    half3 environment = GlossyEnvironmentReflection(reflectDir, inputData.positionWS, perceptualRoughness, ao, inputData.normalizedScreenSpaceUV);
+    #if defined(_SPECULAR_OCCLUSION_OFF)
+        half specularOcclusion = ao;
+    #else
+        half specularOcclusion = SagaSpecularOcclusion(NdotV, ao, alpha) * SagaHorizonOcclusion(reflectDir, geometricNormalWS);
+    #endif
+    half3 environment = GlossyEnvironmentReflection(reflectDir, inputData.positionWS, perceptualRoughness, specularOcclusion, inputData.normalizedScreenSpaceUV);
     col += environment * specularAlbedo;
 
     return col;

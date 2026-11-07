@@ -54,6 +54,20 @@ half3 SagaEnergyCompensation(half3 f0, half2 scaleBias)
     return 1.0h + f0 * (1.0h / singleScatterAlbedo - 1.0h);
 }
 
+// Lagarde/Frostbite: AO reshaped by view angle and lobe width; collapses to ao when rough
+half SagaSpecularOcclusion(half NdotV, half ao, float alpha)
+{
+    return saturate(pow(NdotV + ao, half(exp2(-16.0 * alpha - 1.0))) - 1.0h + ao);
+}
+
+// Russell/Marmoset: fade reflections whose direction dips below the real (vertex) surface
+half SagaHorizonOcclusion(half3 reflectDir, half3 geometricNormalWS)
+{
+    // 1.3: fully faded by ~50 degrees below the horizon instead of at 90
+    half horizon = saturate(1.0h + 1.3h * dot(reflectDir, geometricNormalWS));
+    return horizon * horizon;
+}
+
 // geometric specular AA (Kaplanyan-Tokuyoshi): widen GGX lobe by how much N changes across pixel quad
 half SagaSpecularAA(half perceptualRoughness, half3 normalWS)
 {

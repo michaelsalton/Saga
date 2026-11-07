@@ -30,6 +30,7 @@
 #pragma shader_feature_local_fragment _SPECULAR_AA_OFF
 #pragma shader_feature_local_fragment _MULTISCATTER_OFF
 #pragma shader_feature_local_fragment _ENERGY_BALANCE_OFF
+#pragma shader_feature_local_fragment _SPECULAR_OCCLUSION_OFF
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardLighting.hlsl"
@@ -37,6 +38,10 @@
 
 #ifndef SAGA_MODIFY_SURFACE
 #define SAGA_MODIFY_SURFACE(surf, positionWS)
+#endif
+
+#ifndef SAGA_LIGHTING
+#define SAGA_LIGHTING SagaStandardLighting
 #endif
 
 struct Attributes
@@ -74,19 +79,21 @@ Varyings Vert(Attributes IN)
     UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
 
-    VertexPositionInputs p = GetVertexPositionInputs(IN.positionOS.xyz);
+    float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+    SAGA_MODIFY_POSITION_WS(positionWS, IN);
+    float4 positionCS = TransformWorldToHClip(positionWS);
     VertexNormalInputs n = GetVertexNormalInputs(IN.normalOS, IN.tangentOS);
 
-    OUT.positionHCS = p.positionCS;
-    OUT.positionWS = p.positionWS;
+    OUT.positionHCS = positionCS;
+    OUT.positionWS = positionWS;
     OUT.normalWS = half3(n.normalWS);
     OUT.tangentWS = half4(n.tangentWS, IN.tangentOS.w * GetOddNegativeScale());
     OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
-    OUT.fogFactor = half(ComputeFogFactor(p.positionCS.z));
+    OUT.fogFactor = half(ComputeFogFactor(positionCS.z));
 
     OUTPUT_LIGHTMAP_UV(IN.staticLightmapUV, unity_LightmapST, OUT.staticLightmapUV);
-    OUTPUT_SH4(p.positionWS, OUT.normalWS.xyz,
-               GetWorldSpaceNormalizeViewDir(p.positionWS),
+    OUTPUT_SH4(positionWS, OUT.normalWS.xyz,
+               GetWorldSpaceNormalizeViewDir(positionWS),
                OUT.vertexSH, OUT.probeOcclusion);
 
     return OUT;
@@ -104,9 +111,7 @@ half4 Frag(Varyings IN) : SV_TARGET
     SagaSurface surf = SagaSampleSurface(IN.uv, IN.positionWS, IN.normalWS, IN.tangentWS, viewDirWS);
 
     SAGA_MODIFY_SURFACE(surf, IN.positionWS);
-    #if !defined(_SPECULAR_AA_OFF)
-        surf.roughness = SagaSpecularAA(surf.roughness, surf.normalWS);
-    #endif
+
     InputData inputData  = (InputData)0;
     inputData.positionWS  = IN.positionWS;
     inputData.normalWS = surf.normalWS;
@@ -131,7 +136,9 @@ half4 Frag(Varyings IN) : SV_TARGET
         surf.roughness = SagaSpecularAA(surf.roughness, surf.normalWS);
     #endif
 
-    half3 col = SagaStandardLighting(inputData, surf.albedo, surf.metallic, surf.roughness, surf.ao);
+    // interpolation shortens unit normals, which would weaken the horizon fade
+    half3 geometricNormalWS = normalize(IN.normalWS);
+    half3 col = SAGA_LIGHTING(inputData, geometricNormalWS, surf.albedo, surf.metallic, surf.roughness, surf.ao);
 
     col += surf.emissive;
 

@@ -32,7 +32,17 @@ CBUFFER_START(UnityPerMaterial)
     float _POMSteps;
     float _POMMin;
     float _POMMax;
+
+    // a shader built on Standard's passes appends its own per-material values here, so every pass agrees on the layout
+#ifdef SAGA_EXTRA_MATERIAL_PROPERTIES
+    SAGA_EXTRA_MATERIAL_PROPERTIES
+#endif
 CBUFFER_END
+
+// a shader built on Standard's passes moves vertices here; every geometry pass calls it so shadows and depth follow
+#ifndef SAGA_MODIFY_POSITION_WS
+#define SAGA_MODIFY_POSITION_WS(positionWS, IN)
+#endif
 
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);

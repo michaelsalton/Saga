@@ -8,8 +8,6 @@ Suggested starting order: **lighting debug views** first (it makes everything af
 
 ## Things to add to Standard shader
 
-- Horizon occlusion
-- Specular occlusion
 
 ## Material Extensions
 

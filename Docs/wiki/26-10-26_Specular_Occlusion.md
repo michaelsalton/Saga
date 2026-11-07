@@ -1,0 +1,3 @@
+Specular occlusion. Environment reflections are currently multiplied by plain AO inside URP's GlossyEnvironmentReflection. AO measures how much of the sky a point sees from all directions on average. Reflections come from one narrow cone. You'd see crevices that are either over-darkened or still glowing with sky reflection. Lagarde's specular occlusion approximation combines AO, N·V and roughness to fix this.
+
+Horizon occlusion. With a strong normal map, reflect(-V, N) can point into the geometric surface, and the shader samples sky that's physically behind the wall. You'd see bright rims on normal-map bumps at glancing angles. The fix is a one-line fade.

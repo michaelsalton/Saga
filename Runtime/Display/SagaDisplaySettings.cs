@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 namespace Saga.Rendering
 {
     // One place to switch the pixel camera and the posterize independently of each other.
+    [ExecuteAlways]
     [DisallowMultipleComponent]
     public class SagaDisplaySettings : MonoBehaviour
     {
@@ -51,8 +52,6 @@ namespace Saga.Rendering
 
         public Vector2Int Resolution => ResolutionSizes[(int)resolution];
 
-        bool appliedPixelMode;
-
         void OnEnable()
         {
             Active = this;
@@ -64,24 +63,20 @@ namespace Saga.Rendering
             if (Active == this) Active = null;
         }
 
+        // runs before PixelCamera.LateUpdate sizes the RT, so a slider change lands the same frame
         void Update()
         {
-            // runs before PixelCamera.LateUpdate sizes the RT, so a slider change lands the same frame
-            if (pixelCamera != null) pixelCamera.TargetSize = Resolution;
-            // polled instead of OnValidate, which can't safely toggle components
-            if (pixelMode != appliedPixelMode) ApplyPixelMode();
+            // enforced every frame so a hand toggle in the inspector can't desync the script from its camera
+            ApplyPixelMode();
         }
 
         void ApplyPixelMode()
         {
-            if (pixelCamera != null)
-            {
-                pixelCamera.TargetSize = Resolution;
-                pixelCamera.enabled = pixelMode;
-                // a rig that starts disabled never runs OnDisable, so its camera would stay on without this
-                pixelCamera.GetComponent<Camera>().enabled = pixelMode;
-            }
-            appliedPixelMode = pixelMode;
+            if (pixelCamera == null) return;
+            pixelCamera.TargetSize = Resolution;
+            pixelCamera.enabled = pixelMode;
+            // PixelCamera.OnEnable never runs in edit mode, so there is no RT and the present camera would show a stale frame
+            if (pixelCamera.TryGetComponent(out Camera presentCamera)) presentCamera.enabled = pixelMode && Application.isPlaying;
         }
     }
 }

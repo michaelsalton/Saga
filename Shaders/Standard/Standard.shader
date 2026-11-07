@@ -26,6 +26,7 @@ Shader "Saga/Standard"
         [ToggleOff(_SPECULAR_AA_OFF)] _SpecularAA ("Specular Anti-Aliasing", Float) = 1
         [ToggleOff(_MULTISCATTER_OFF)] _MultiScatter ("Multiple Scattering Compensation", Float) = 1
         [ToggleOff(_ENERGY_BALANCE_OFF)] _EnergyBalance ("Diffuse/Specular Energy Balance", Float) = 1
+        [ToggleOff(_SPECULAR_OCCLUSION_OFF)] _SpecularOcclusion ("Specular/Horizon Occlusion", Float) = 1
 
         _DetailMask ("Detail Mask (A)", 2D) = "white" {}
         _DetailAlbedoMap ("Detail Albedo", 2D) = "linearGrey" {}

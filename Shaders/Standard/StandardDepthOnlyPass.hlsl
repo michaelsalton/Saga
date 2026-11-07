@@ -8,6 +8,8 @@
 struct Attributes
 {
     float4 positionOS : POSITION;
+    // unused by Standard; SAGA_MODIFY_POSITION_WS can displace along it, and depth must match the forward pass
+    float3 normalOS : NORMAL;
     float2 uv : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -27,7 +29,9 @@ Varyings DepthVert(Attributes IN)
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
-    OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+    float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+    SAGA_MODIFY_POSITION_WS(positionWS, IN);
+    OUT.positionHCS = TransformWorldToHClip(positionWS);
     return OUT;
 }
 

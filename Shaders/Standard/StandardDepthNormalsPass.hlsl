@@ -28,7 +28,9 @@ Varyings DepthNormalsVert(Attributes IN)
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
-    OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+    float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+    SAGA_MODIFY_POSITION_WS(positionWS, IN);
+    OUT.positionHCS = TransformWorldToHClip(positionWS);
     OUT.normalWS = half3(TransformObjectToWorldNormal(IN.normalOS));
     OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
     return OUT;

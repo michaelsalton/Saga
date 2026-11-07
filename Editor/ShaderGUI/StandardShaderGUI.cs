@@ -165,6 +165,7 @@ namespace Saga.Rendering.Editor
         {
             DrawProperty("_MultiScatter");
             DrawProperty("_EnergyBalance");
+            DrawProperty("_SpecularOcclusion");
         }
 
         public override void ValidateMaterial(Material material)

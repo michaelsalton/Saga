@@ -16,6 +16,11 @@ namespace Saga.Rendering
                  "pixel boundaries. The rounded-away sub-pixel remainder is offset at the upscale, so motion stays smooth.")]
         [SerializeField] bool enableSnapping = true;
 
+        [Header("Anti-aliasing")]
+        [Tooltip("Coverage samples per internal pixel. Each triangle still shades once per pixel, but the resolve " +
+                 "weights it by how many samples it covered, so sub-pixel trim stops flickering. Disables TAA.")]
+        [SerializeField] MSAASamples msaaSamples = MSAASamples.MSAA4x;
+
         public static PixelCamera Active { get; private set; }
         public static RTHandle InternalRTHandle { get; private set; }
         // built RT size including overscan; zero while the rig is off so consumers fall back to screen size
@@ -65,7 +70,6 @@ namespace Saga.Rendering
             presentCamera.cullingMask = 0;
             presentCamera.clearFlags = CameraClearFlags.Nothing;
             presentCamera.orthographic = true;
-            presentCamera.enabled = true;
 
             Active = this;
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
@@ -78,8 +82,6 @@ namespace Saga.Rendering
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
             RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
             if (activeWorldCamera != null) activeWorldCamera.targetTexture = null;
-            // with no RT to present, a second base camera would only risk overwriting the world camera's frame
-            if (presentCamera != null) presentCamera.enabled = false;
             ReleaseTarget();
         }
 
@@ -190,7 +192,7 @@ namespace Saga.Rendering
 
         void EnsureTarget(int width, int height)
         {
-            if (internalRT != null && builtWidth == width && builtHeight == height)
+            if (internalRT != null && builtWidth == width && builtHeight == height && internalRT.antiAliasing == (int)msaaSamples)
             {
                 // something else may have cleared the target, e.g. a domain reload in edit mode
                 if (activeWorldCamera.targetTexture != internalRT) activeWorldCamera.targetTexture = internalRT;
@@ -204,8 +206,8 @@ namespace Saga.Rendering
             {
                 name = "PixelCamera_Internal",
                 filterMode = FilterMode.Point,
-                // MSAA fights the hard-edge look and the outline pass
-                antiAliasing = 1,
+                // URP takes a target-texture camera's MSAA count from this, not from the pipeline asset
+                antiAliasing = (int)msaaSamples,
                 useMipMap = false,
                 autoGenerateMips = false,
                 wrapMode = TextureWrapMode.Clamp,

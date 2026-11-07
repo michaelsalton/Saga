@@ -29,6 +29,8 @@ struct Varyings
 float4 GetShadowPositionHClip(Attributes IN)
 {
     float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+    // before the bias, which pushes along the normal from wherever the vertex ends up
+    SAGA_MODIFY_POSITION_WS(positionWS, IN);
     float3 normalWS = TransformObjectToWorldNormal(IN.normalOS);
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
