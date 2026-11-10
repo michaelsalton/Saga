@@ -1,0 +1,41 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:VisualElement class="game-menu">
+        <saga:MenuTabs>
+            <saga:MenuTab label="Tab 1">
+                <saga:MenuButton text="Item 1" class="default-focus" />
+                <saga:MenuButton text="Item 2" />
+                <saga:MenuButton text="Item 3" />
+            </saga:MenuTab>
+            <saga:MenuTab label="Tab 2">
+                <saga:MenuButton text="Item 1" class="default-focus" />
+                <saga:MenuButton text="Item 2" />
+                <saga:MenuButton text="Item 3" />
+            </saga:MenuTab>
+            <saga:MenuTab label="Tab 3">
+                <saga:MenuButton text="Item 1" class="default-focus" />
+                <saga:MenuButton text="Item 2" />
+                <saga:MenuButton text="Item 3" />
+            </saga:MenuTab>
+            <saga:MenuTab label="Tab 4">
+                <saga:MenuButton text="Item 1" class="default-focus" />
+                <saga:MenuButton text="Item 2" />
+                <saga:MenuButton text="Item 3" />
+            </saga:MenuTab>
+        </saga:MenuTabs>
+        <ui:VisualElement class="game-menu__bar">
+            <ui:VisualElement class="game-menu__hints">
+                <ui:VisualElement class="game-menu__hint hinted">
+                    <saga:ControlHint action="UI/PreviousTab" />
+                    <saga:ControlHint action="UI/NextTab" />
+                    <ui:Label text="Switch tab" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="game-menu__actions">
+                <ui:Button name="resume" focusable="false" class="game-menu__bar-button hinted">
+                    <saga:ControlHint action="UI/Cancel" />
+                    <ui:Label text="Resume" picking-mode="Ignore" />
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

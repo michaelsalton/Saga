@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:VisualElement class="interaction-prompt" picking-mode="Ignore">
+        <saga:ControlHint action="Player/Interact" class="interaction-prompt__key" />
+        <ui:Label name="verb" class="interaction-prompt__verb" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

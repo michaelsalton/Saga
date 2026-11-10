@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="hud-layer" class="layer" picking-mode="Ignore" />
+    <ui:VisualElement name="screen-layer" class="layer" picking-mode="Ignore" />
+</ui:UXML>

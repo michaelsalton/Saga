@@ -13,7 +13,7 @@ namespace Saga.Gameplay
     /// scattered forest costs one calculation plus one transform write each.
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Vice/Billboard")]
+    [AddComponentMenu("Saga/Gameplay/Billboard")]
     public class Billboard : MonoBehaviour
     {
         public enum Mode
