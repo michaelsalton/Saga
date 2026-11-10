@@ -1,0 +1,13 @@
+:root {
+    --color-scrim: rgba(0, 0, 0, 0.55);
+    --color-surface: rgb(18, 20, 26);
+    --color-text: rgb(255, 255, 255);
+    --color-text-dim: rgba(255, 255, 255, 0.5);
+    --color-text-disabled: rgba(255, 255, 255, 0.2);
+    --color-accent: rgb(255, 80, 160);
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-edge: 120px;
+    --font-size-title: 48px;
+    --font-size-body: 24px;
+}

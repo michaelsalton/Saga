@@ -1,0 +1,111 @@
+#pragma kernel InitialSpectrum
+#pragma kernel TimeSpectrum
+
+static const float GRAVITY = 9.81;
+static const float TWO_PI = 6.28318530718;
+
+// xy = h0(k). Written once by InitialSpectrum
+RWTexture2D<float2> _InitialSpectrum;
+// xy = height + i*displaceX, zw = displaceZ + i*slopeX
+RWTexture2D<float4> _SpectrumA;
+// xy = slopeZ + i*0, zw unused for now
+RWTexture2D<float4> _SpectrumB;
+
+uint _Resolution;
+float _PatchSize;
+float _WindSpeed;
+float2 _WindDirection;
+float _SpectrumScale;
+float _SmallWaveCutoff;
+float _OceanTime;
+
+float2 ComplexMultiply(float2 first, float2 second)
+{
+    return float2(first.x * second.x - first.y * second.y, first.x * second.y + first.y * second.x);
+}
+
+float2 ComplexConjugate(float2 value) { return float2(value.x, -value.y); }
+
+// i * value: rotates a complex number a quarter turn
+float2 TimesI(float2 value) { return float2(-value.y, value.x); }
+
+float2 WaveVector(uint2 id)
+{
+    // texel N/2 is k = 0; each texel step is one more whole wave across the patch, which is why it tiles
+    float2 centered = float2(id) - _Resolution * 0.5;
+    return centered * (TWO_PI / _PatchSize);
+}
+
+// PCG hash: deterministic, so the same settings give the same ocean every run
+float Hash(uint seed)
+{
+    uint state = seed * 747796405u + 2891336453u;
+    uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    return ((word >> 22u) ^ word) / 4294967295.0;
+}
+
+float2 GaussianPair(uint2 id)
+{
+    uint seed = id.x + id.y * _Resolution;
+    // kept off zero so log() stays finite
+    float uniform1 = max(Hash(seed * 2u), 1e-6);
+    float uniform2 = Hash(seed * 2u + 1u);
+    // Box-Muller: two flat randoms become two independent bell-curve randoms
+    float radius = sqrt(-2.0 * log(uniform1));
+    return radius * float2(cos(TWO_PI * uniform2), sin(TWO_PI * uniform2));
+}
+
+float Phillips(float2 waveVector)
+{
+    float waveNumber = length(waveVector);
+    if (waveNumber < 1e-4) return 0;
+
+    float waveNumberSquared = waveNumber * waveNumber;
+    // longest wave this wind can sustain
+    float windLength = _WindSpeed * _WindSpeed / GRAVITY;
+    float alignment = dot(waveVector / waveNumber, _WindDirection);
+
+    float longCutoff = exp(-1.0 / (waveNumberSquared * windLength * windLength));
+    float shortCutoff = exp(-waveNumberSquared * _SmallWaveCutoff * _SmallWaveCutoff);
+    return _SpectrumScale * longCutoff * shortCutoff * alignment * alignment
+         / (waveNumberSquared * waveNumberSquared);
+}
+
+[numthreads(8, 8, 1)]
+void InitialSpectrum(uint3 id : SV_DispatchThreadID)
+{
+    // P is energy per unit area of k-space; each texel stands for one (2pi/L)^2 cell of it
+    float cellSize = TWO_PI / _PatchSize;
+    float cellEnergy = Phillips(WaveVector(id.xy)) * cellSize * cellSize;
+    // sqrt(E/2) per component: a complex gaussian then has mean energy E
+    _InitialSpectrum[id.xy] = GaussianPair(id.xy) * sqrt(cellEnergy * 0.5);
+}
+
+[numthreads(8, 8, 1)]
+void TimeSpectrum(uint3 id : SV_DispatchThreadID)
+{
+    float2 waveVector = WaveVector(id.xy);
+    float waveNumber = max(length(waveVector), 1e-4);
+    // deep-water dispersion: long waves outrun short ones
+    float angularSpeed = sqrt(GRAVITY * waveNumber);
+
+    // texel holding -k
+    uint2 mirrored = (_Resolution - id.xy) % _Resolution;
+    float2 forward = _InitialSpectrum[id.xy];
+    float2 backward = ComplexConjugate(_InitialSpectrum[mirrored]);
+
+    float phase = angularSpeed * _OceanTime;
+    float2 rotation = float2(cos(phase), sin(phase));
+    // Hermitian pairing: guarantees the IFFT comes out purely real
+    float2 height = ComplexMultiply(forward, rotation) + ComplexMultiply(backward, ComplexConjugate(rotation));
+
+    float2 slopeX = TimesI(height) * waveVector.x;
+    float2 slopeZ = TimesI(height) * waveVector.y;
+    // -i * k/|k| * h: pushes surface toward crests, the FFT version of Gerstner's sideways motion
+    float2 displaceX = -TimesI(height) * (waveVector.x / waveNumber);
+    float2 displaceZ = -TimesI(height) * (waveVector.y / waveNumber);
+
+    // two-for-one packing: each pair of real-output spectra shares one complex IFFT
+    _SpectrumA[id.xy] = float4(height + TimesI(displaceX), displaceZ + TimesI(slopeX));
+    _SpectrumB[id.xy] = float4(slopeZ, 0, 0);
+}

@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <saga:MenuPanel title="Settings">
+        <saga:MenuButton name="display" text="Display" class="default-focus" />
+        <saga:MenuButton name="graphics" text="Graphics" />
+        <saga:MenuButton name="controls" text="Controls" />
+        <saga:MenuButton name="audio" text="Audio" />
+        <ui:VisualElement class="menu__actions">
+            <saga:MenuButton name="back" text="Back" />
+        </ui:VisualElement>
+    </saga:MenuPanel>
+</ui:UXML>

@@ -2,7 +2,8 @@
     "name": "Saga.Rendering.Editor",
     "rootNamespace": "Saga.Rendering.Editor",
     "references": [
-        "Unity.RenderPipelines.Core.Editor"
+        "Unity.RenderPipelines.Core.Editor",
+        "Saga.Rendering"
     ],
     "includePlatforms": [
         "Editor"

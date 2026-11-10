@@ -56,6 +56,21 @@ MonoBehaviour:
     BlurQuality: 0
     Falloff: 999
     SampleCount: -1
+--- !u!114 &-12131599934528438
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d7d7f5c773c5664cbb022b750d788c9, type: 3}
+  m_Name: BackdropBlurRenderFeature
+  m_EditorClassIdentifier: Saga.Rendering::Saga.Rendering.BackdropBlurRenderFeature
+  m_Active: 1
+  blurShader: {fileID: 4800000, guid: bc15e4dbcba46a54aadd99474603525d, type: 3}
+  levels: 4
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82,10 +97,10 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 1009113659368096733}
-  - {fileID: 7491871100833207956}
   - {fileID: -127190023105050730}
   - {fileID: -9130806419341767116}
-  m_RendererFeatureMap: dd43a1d48617010e94962d941279f8679687d90d59213cfe340e474ef0db4881l
+  - {fileID: -12131599934528438}
+  m_RendererFeatureMap: dd43a1d48617010e9687d90d59213cfe340e474ef0db48814a6458c75fe6d4ffl
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 18d39981fff4528449373c39eb9b9631, type: 2}
   m_AssetVersion: 3
@@ -128,29 +143,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Saga.Rendering.PixelCameraRenderFeature
   m_Active: 1
   upscaleShader: {fileID: 4800000, guid: 65cf131683e45e0469b99b3b5044afa4, type: 3}
---- !u!114 &7491871100833207956
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28f9b8ae026a86449a6e272b65e3d328, type: 3}
-  m_Name: OutlineRenderFeature
-  m_EditorClassIdentifier: Assembly-CSharp::Saga.Rendering.OutlineRenderFeature
-  m_Active: 1
-  settings:
-    outlineShader: {fileID: 4800000, guid: 60742427fb806fe4e8634144a3dbf812, type: 3}
-    outlineColor: {r: 1, g: 1, b: 1, a: 1}
-    depthThreshold: 0.035
-    normalThreshold: 0.625
-    lightingStrength: 1
-    shadowTint: {r: 0, g: 0, b: 0, a: 1}
-    injectionPoint: 450
-    useControlMask: 1
-    controlShader: {fileID: 4800000, guid: f73843ba71eef58438123e49e1976290, type: 3}
 --- !u!114 &7861510998709246806
 MonoBehaviour:
   m_ObjectHideFlags: 0

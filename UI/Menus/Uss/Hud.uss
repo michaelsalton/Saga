@@ -1,0 +1,41 @@
+.screen-fade {
+    background-color: rgb(0, 0, 0);
+    opacity: 0;
+}
+
+.interaction-prompt {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 58%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.12s;
+}
+
+.interaction-prompt--visible {
+    opacity: 1;
+}
+
+.interaction-prompt__key {
+    min-width: 40px;
+    margin-right: var(--space-1);
+    padding: 2px var(--space-1);
+    border-width: 2px;
+    border-color: var(--color-text);
+    border-radius: 4px;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    background-color: var(--color-scrim);
+    -unity-text-align: middle-center;
+}
+
+.interaction-prompt__verb {
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}

@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:Template name="SettingsActions" src="SettingsActions.uxml" />
+    <saga:MenuPanel title="Audio">
+        <saga:SettingsSlider label="Master Volume" low-value="0" high-value="1" step="0.01" format="0%" class="default-focus">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="MasterVolume" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsSlider>
+        <ui:Instance template="SettingsActions" />
+    </saga:MenuPanel>
+</ui:UXML>

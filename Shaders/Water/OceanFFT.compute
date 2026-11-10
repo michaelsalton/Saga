@@ -1,0 +1,95 @@
+#pragma kernel InverseFFTRows
+#pragma kernel InverseFFTColumns
+#pragma kernel Assemble
+
+static const float PI = 3.14159265359;
+// largest supported resolution; sizes the groupshared buffers (2 x 512 x 16 bytes = 16 KB)
+#define MAX_SIZE 512
+// fixed thread count; each thread loops over N / THREADS elements so one kernel serves every resolution
+#define THREADS 256
+
+RWTexture2D<float4> _FFTTarget;
+Texture2D<float4> _SpatialA;
+Texture2D<float4> _SpatialB;
+// xyz = (displaceX, height, displaceZ)
+RWTexture2D<float4> _Displacement;
+// xy = (slopeX, slopeZ)
+RWTexture2D<float2> _Slope;
+
+uint _Resolution;
+uint _LogResolution;
+
+// ping-pong: each stage reads one row and writes the other
+groupshared float4 fftBuffer[2][MAX_SIZE];
+
+float2 ComplexMultiply(float2 first, float2 second)
+{
+    return float2(first.x * second.x - first.y * second.y, first.x * second.y + first.y * second.x);
+}
+
+uint2 TexelOf(uint index, uint lineIndex, bool alongRows)
+{
+    return alongRows ? uint2(index, lineIndex) : uint2(lineIndex, index);
+}
+
+void InverseFFT(uint threadIndex, uint lineIndex, bool alongRows)
+{
+    for (uint n = threadIndex; n < _Resolution; n += THREADS)
+    {
+        // puts each element where the recursive even/odd split would end up placing it
+        uint reversed = reversebits(n) >> (32 - _LogResolution);
+        fftBuffer[0][reversed] = _FFTTarget[TexelOf(n, lineIndex, alongRows)];
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    uint source = 0;
+    for (uint halfSize = 1; halfSize < _Resolution; halfSize *= 2)
+    {
+        for (uint n = threadIndex; n < _Resolution; n += THREADS)
+        {
+            uint offset = n % (halfSize * 2);
+            uint pairIndex = offset % halfSize;
+            uint top = n - offset + pairIndex;
+            float4 even = fftBuffer[source][top];
+            float4 odd = fftBuffer[source][top + halfSize];
+
+            // phase the odd sub-transform picks up relative to the even one; + sign because this is the inverse
+            float angle = PI * pairIndex / halfSize;
+            float2 twiddle = float2(cos(angle), sin(angle));
+            // each float4 is two packed complex numbers, rotated independently
+            float4 rotated = float4(ComplexMultiply(twiddle, odd.xy), ComplexMultiply(twiddle, odd.zw));
+            // W^(N/2) = -1, so the second half of each block is the same butterfly with the sign flipped
+            fftBuffer[1 - source][n] = offset < halfSize ? even + rotated : even - rotated;
+        }
+        GroupMemoryBarrierWithGroupSync();
+        source = 1 - source;
+    }
+
+    for (uint n = threadIndex; n < _Resolution; n += THREADS)
+        _FFTTarget[TexelOf(n, lineIndex, alongRows)] = fftBuffer[source][n];
+}
+
+[numthreads(THREADS, 1, 1)]
+void InverseFFTRows(uint3 groupID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
+{
+    InverseFFT(threadID.x, groupID.x, true);
+}
+
+[numthreads(THREADS, 1, 1)]
+void InverseFFTColumns(uint3 groupID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
+{
+    InverseFFT(threadID.x, groupID.x, false);
+}
+
+[numthreads(8, 8, 1)]
+void Assemble(uint3 id : SV_DispatchThreadID)
+{
+    // spectrum is centred on k = 0 at texel N/2; that shift multiplies every output by (-1)^(x+z)
+    float centeringSign = ((id.x + id.y) & 1) ? -1.0 : 1.0;
+    // after both passes: x = height, y = displaceX, z = displaceZ, w = slopeX
+    float4 packedA = _SpatialA[id.xy] * centeringSign;
+    float slopeZ = _SpatialB[id.xy].x * centeringSign;
+
+    _Displacement[id.xy] = float4(packedA.y, packedA.x, packedA.z, 0);
+    _Slope[id.xy] = float2(packedA.w, slopeZ);
+}

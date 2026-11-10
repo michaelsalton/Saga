@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:Template name="SettingsActions" src="SettingsActions.uxml" />
+    <saga:MenuPanel title="Controls">
+        <saga:SettingsSlider label="Mouse Sensitivity" low-value="0.01" high-value="1" step="0.01" format="0.00" class="default-focus">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="MouseSensitivity" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsSlider>
+        <saga:SettingsSlider label="Stick Sensitivity" low-value="30" high-value="360" step="5" format="0">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="StickSensitivity" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsSlider>
+        <saga:SettingsToggle label="Invert Y">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="InvertY" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsToggle>
+        <saga:SettingsToggle label="Head Bob">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="HeadBob" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsToggle>
+        <saga:SettingsToggle label="Idle Sway">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="IdleSway" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsToggle>
+        <ui:Instance template="SettingsActions" />
+    </saga:MenuPanel>
+</ui:UXML>

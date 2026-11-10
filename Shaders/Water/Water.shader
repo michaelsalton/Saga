@@ -65,6 +65,8 @@ Shader "Saga/Water"
         [Header(Waves)]
         _WaveAmplitude ("Amplitude", Range(0, 5)) = 1.5
         _WaveSpeed ("Speed", Range(0,10)) = 2.5
+        [Toggle(_WAVES_FFT)] _WavesFFT ("FFT Ocean", Float) = 0
+        _OceanChoppiness ("Choppiness", Range(0, 2)) = 1
 
         [Header(Edge Dampening)]
         _EdgeDampenWidth ("Edge Dampen Width (UV)", Range(0.01, 0.5)) = 0.15
@@ -95,6 +97,7 @@ Shader "Saga/Water"
             #pragma hull Hull
             #pragma domain Domain
             #pragma fragment Frag
+            #pragma shader_feature_local _WAVES_FFT
 
             #include "Packages/com.saltbox.saga/Shaders/Water/WaterInput.hlsl" // CBUFFER, Textures, Samplers
             #include "Packages/com.saltbox.saga/Shaders/Water/WaterWaves.hlsl" // Wave calculations
@@ -133,6 +136,7 @@ Shader "Saga/Water"
                 float3 normalWS : TEXCOORD1;
                 float3 positionWS : TEXCOORD2;
                 float3 restPositionWS : TEXCOORD3; // pre-wave. Foam decides everything in this frame
+                float edgeDampen : TEXCOORD4;
             };
 
             // Vertex - pass through in OBJECT space
@@ -185,22 +189,33 @@ Shader "Saga/Water"
                 float2 uv1 = BARY_INTERP(uv1, patch, bary);
 
                 float edgeDampen = SagaWaveEdgeDampen(uv1);
-                SagaWaveResult waves = SagaCalculateWaves(positionsOS.xyz, edgeDampen);
+                float3 restPositionWS = TransformObjectToWorld(positionsOS.xyz);
+                o.restPositionWS = restPositionWS;
+                o.edgeDampen = edgeDampen;
 
-                VertexPositionInputs positions = GetVertexPositionInputs(waves.position);
+                #if defined(_WAVES_FFT)
+                    o.positionWS = restPositionWS + SagaOceanDisplacement(restPositionWS, edgeDampen);
+                    // unused on this path; the fragment rebuilds the normal per pixel from the slope texture
+                    o.normalWS = float3(0, 1, 0);
+                #else
+                    SagaWaveResult waves = SagaCalculateWaves(positionsOS.xyz, edgeDampen);
+                    o.positionWS = TransformObjectToWorld(waves.position);
+                    o.normalWS = TransformObjectToWorldNormal(waves.normal);
+                #endif
 
-                o.normalWS = TransformObjectToWorldNormal(waves.normal);
-                o.positionWS = positions.positionWS;
-                o.restPositionWS = TransformObjectToWorld(positionsOS.xyz);
-                //o.positionsHCS = TransformObjectToHClip(waves.position);
-                o.positionsHCS = positions.positionCS;
+                o.positionsHCS = TransformWorldToHClip(o.positionWS);
                 return o;
             }
 
             // Fragment
             half4 Frag(Varyings IN) : SV_TARGET
             {
-                float3 finalNormal = normalize(IN.normalWS);
+                #if defined(_WAVES_FFT)
+                    // per pixel: most of the visible detail is shorter than the vertex spacing
+                    float3 finalNormal = SagaOceanNormal(IN.restPositionWS, IN.edgeDampen);
+                #else
+                    float3 finalNormal = normalize(IN.normalWS);
+                #endif
                 float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionsHCS);
 
                 SagaRefractionResult refraction =

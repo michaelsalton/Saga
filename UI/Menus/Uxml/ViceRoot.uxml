@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="/Packages/com.saltbox.saga/UI/Framework.uss" />
+    <Style src="/Packages/com.saltbox.saga/UI/Components/Components.uss" />
+    <Style src="../Uss/Tokens.uss" />
+    <Style src="../Uss/Hud.uss" />
+    <ui:VisualElement name="hud-layer" class="layer" picking-mode="Ignore" />
+    <ui:VisualElement name="screen-layer" class="layer" picking-mode="Ignore" />
+</ui:UXML>

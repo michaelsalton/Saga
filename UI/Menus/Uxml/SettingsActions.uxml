@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:VisualElement class="menu__actions">
+        <saga:MenuButton name="reset" text="Reset" />
+        <saga:MenuButton name="confirm" text="Confirm" />
+        <saga:MenuButton name="back" text="Back" />
+    </ui:VisualElement>
+</ui:UXML>

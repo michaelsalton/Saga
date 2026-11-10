@@ -80,6 +80,9 @@ CBUFFER_START(UnityPerMaterial)
     float _WaveSpeed;
     float _EdgeDampenWidth;
 
+    // FFT ocean. Unconditional: every variant must share this layout or the SRP Batcher drops the shader
+    float _OceanChoppiness;
+
 CBUFFER_END
 
 TEXTURE2D(_WaterNormalMap1);
@@ -92,5 +95,12 @@ float4 _WaterReflectionScaleBias;
 float4 _WaterReflectionTexelSize;   // (1/w, 1/h, w, h) of the reflection RT. The blur radius is in these
 float4 _WaterReflectionSkyColor;    // the mirror's clear color, linear. What distant reflections wash INTO
 float _WaterReflectionDepthValid;   // 1 only while WaterReflectionDepthFeature is installed and running
+
+// written by OceanSpectrum every frame; never declared in Properties or the material's copy would mask the global
+TEXTURE2D(_OceanDisplacement);
+SAMPLER(sampler_OceanDisplacement);
+TEXTURE2D(_OceanSlope);
+SAMPLER(sampler_OceanSlope);
+float _OceanPatchSize;
 
 #endif

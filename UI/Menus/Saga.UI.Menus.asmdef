@@ -1,0 +1,19 @@
+{
+    "name": "Saga.UI.Menus",
+    "rootNamespace": "Saga.UI",
+    "references": [
+        "Saga.UI",
+        "Saga.Gameplay",
+        "Saga.Rendering",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,39 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:Template name="SettingsActions" src="SettingsActions.uxml" />
+    <saga:MenuPanel title="Display">
+        <saga:SettingsStepper label="Window Mode" class="default-focus">
+            <Bindings>
+                <ui:DataBinding property="Choices" data-source-path="WindowModeChoices" binding-mode="ToTarget" />
+                <ui:DataBinding property="value" data-source-path="WindowModeIndex" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsStepper>
+        <saga:SettingsStepper label="Resolution">
+            <Bindings>
+                <ui:DataBinding property="Choices" data-source-path="ResolutionChoices" binding-mode="ToTarget" />
+                <ui:DataBinding property="value" data-source-path="ResolutionIndex" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsStepper>
+        <saga:SettingsToggle label="VSync">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="VerticalSync" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsToggle>
+        <saga:SettingsStepper label="Max Frame Rate">
+            <Bindings>
+                <ui:DataBinding property="Choices" data-source-path="FrameRateChoices" binding-mode="ToTarget" />
+                <ui:DataBinding property="value" data-source-path="FrameRateIndex" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsStepper>
+        <saga:SettingsSlider label="Brightness" low-value="-1" high-value="1" step="0.1" format="+0.0;-0.0;0">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="Brightness" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsSlider>
+        <saga:SettingsSlider label="UI Scale" low-value="0.75" high-value="1.5" step="0.05" format="0%">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="UiScale" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsSlider>
+        <ui:Instance template="SettingsActions" />
+    </saga:MenuPanel>
+</ui:UXML>

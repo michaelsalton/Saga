@@ -2,7 +2,10 @@
     "name": "Saga.Gameplay",
     "rootNamespace": "Saga.Gameplay",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Cinemachine",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -124,4 +124,26 @@ SagaWaveResult SagaCalculateWaves(float3 wavePosition, float edgeDampen)
     return result;
 }
 
+float2 SagaOceanUV(float3 restPositionWS)
+{
+    // world-anchored: neighbouring grids read the same ocean, and the patch repeats every _OceanPatchSize metres
+    return restPositionWS.xz / max(_OceanPatchSize, 1e-3);
+}
+
+float3 SagaOceanDisplacement(float3 restPositionWS, float edgeDampen)
+{
+    // no screen derivatives outside the fragment stage, so the mip is named; 0 holds while vertices outnumber texels
+    float3 displacement = SAMPLE_TEXTURE2D_LOD(_OceanDisplacement, sampler_OceanDisplacement,
+                                               SagaOceanUV(restPositionWS), 0).xyz;
+    displacement.xz *= _OceanChoppiness;
+    return displacement * edgeDampen;
+}
+
+float3 SagaOceanNormal(float3 restPositionWS, float edgeDampen)
+{
+    float2 slope = SAMPLE_TEXTURE2D(_OceanSlope, sampler_OceanSlope, SagaOceanUV(restPositionWS)).xy * edgeDampen;
+    // cross of the height field's tangents (1, dh/dx, 0) and (0, dh/dz, 1)
+    return normalize(float3(-slope.x, 1.0, -slope.y));
+}
+
 #endif

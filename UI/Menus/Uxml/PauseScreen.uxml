@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <saga:MenuPanel title="Paused">
+        <saga:MenuButton name="resume" text="Resume" class="default-focus" />
+        <saga:MenuButton name="save" text="Save" />
+        <saga:MenuButton name="settings" text="Settings" />
+        <saga:MenuButton name="quit" text="Quit to Menu" />
+    </saga:MenuPanel>
+</ui:UXML>

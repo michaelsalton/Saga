@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <saga:MenuPanel title="Vice">
+        <saga:MenuButton name="continue" text="Continue" />
+        <saga:MenuButton name="new-game" text="New Game" />
+        <saga:MenuButton name="settings" text="Settings" />
+        <saga:MenuButton name="quit" text="Quit" />
+    </saga:MenuPanel>
+</ui:UXML>

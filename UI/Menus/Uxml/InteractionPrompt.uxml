@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="interaction-prompt" picking-mode="Ignore">
+        <ui:Label name="key" class="interaction-prompt__key" picking-mode="Ignore" />
+        <ui:Label name="verb" class="interaction-prompt__verb" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

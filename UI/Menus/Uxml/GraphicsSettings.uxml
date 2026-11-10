@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:saga="Saga.UI">
+    <ui:Template name="SettingsActions" src="SettingsActions.uxml" />
+    <saga:MenuPanel title="Graphics">
+        <saga:SettingsStepper label="Texture Quality" options="Low,Medium,High,Ultra" class="default-focus">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="TextureQuality" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsStepper>
+        <saga:SettingsStepper label="Shadow Quality" options="Low,Medium,High,Ultra">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="ShadowQuality" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsStepper>
+        <saga:SettingsToggle label="Ambient Occlusion">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="AmbientOcclusion" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsToggle>
+        <saga:SettingsSlider label="Field of View" low-value="40" high-value="110" step="1" format="0">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="FieldOfView" binding-mode="TwoWay" />
+            </Bindings>
+        </saga:SettingsSlider>
+        <ui:Instance template="SettingsActions" />
+    </saga:MenuPanel>
+</ui:UXML>
