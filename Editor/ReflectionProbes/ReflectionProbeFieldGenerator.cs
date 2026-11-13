@@ -101,12 +101,10 @@ namespace Saga.Rendering.Editor
 
             foreach (MeshRenderer renderer in UnityEngine.Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Exclude))
             {
-                if (!renderer.enabled || renderer.gameObject.scene != field.gameObject.scene) continue;
-                if (!GameObjectUtility.AreStaticEditorFlagsSet(renderer.gameObject, StaticEditorFlags.ReflectionProbeStatic)) continue;
+                if (!IsProbeGeometry(renderer, field.gameObject.scene)) continue;
                 if (!renderer.bounds.Intersects(volume)) continue;
 
                 MeshFilter filter = renderer.GetComponent<MeshFilter>();
-                if (filter == null || filter.sharedMesh == null) continue;
 
                 GameObject copy = new GameObject(renderer.name) { hideFlags = HideFlags.HideAndDontSave };
                 SceneManager.MoveGameObjectToScene(copy, geometryScene);
@@ -121,6 +119,30 @@ namespace Saga.Rendering.Editor
 
             Physics.SyncTransforms();
             return colliderCount;
+        }
+
+        // the renderers probes are placed against; fitting and generating share it so they agree on what the scene is
+        public static bool IsProbeGeometry(MeshRenderer renderer, Scene scene)
+        {
+            if (!renderer.enabled || renderer.gameObject.scene != scene) return false;
+            if (!GameObjectUtility.AreStaticEditorFlagsSet(renderer.gameObject, StaticEditorFlags.ReflectionProbeStatic)) return false;
+            MeshFilter filter = renderer.GetComponent<MeshFilter>();
+            return filter != null && filter.sharedMesh != null;
+        }
+
+        public static bool TryGetSceneBounds(Scene scene, out Bounds sceneBounds)
+        {
+            sceneBounds = new Bounds();
+            bool found = false;
+            foreach (MeshRenderer renderer in UnityEngine.Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Exclude))
+            {
+                if (!IsProbeGeometry(renderer, scene)) continue;
+                // a default Bounds sits at the origin, so encapsulating into it would drag the box to (0,0,0)
+                if (found) sceneBounds.Encapsulate(renderer.bounds);
+                else sceneBounds = renderer.bounds;
+                found = true;
+            }
+            return found;
         }
 
         // Fibonacci sphere: a golden-angle spiral spreads directions evenly with no clumping at the poles
@@ -460,11 +482,40 @@ namespace Saga.Rendering.Editor
         {
             DrawDefaultInspector();
             EditorGUILayout.Space();
+            if (GUILayout.Button("Fit To Scene Bounds")) FitToSceneBounds((SagaReflectionProbeField)target);
             if (GUILayout.Button("Generate Probes"))
             {
                 int probeCount = ReflectionProbeFieldGenerator.Generate((SagaReflectionProbeField)target);
                 Debug.Log($"Reflection Probe Field: placed {probeCount} probes. Bake them from the Lighting window.", target);
             }
+        }
+
+        void FitToSceneBounds(SagaReflectionProbeField field)
+        {
+            if (!ReflectionProbeFieldGenerator.TryGetSceneBounds(field.gameObject.scene, out Bounds sceneBounds))
+            {
+                Debug.LogWarning("Reflection Probe Field: no enabled MeshRenderers marked Reflection Probe Static in this scene.", field);
+                return;
+            }
+
+            Transform fieldTransform = field.transform;
+            Transform[] probes = new Transform[fieldTransform.childCount];
+            Vector3[] probePositions = new Vector3[probes.Length];
+            for (int i = 0; i < probes.Length; i++)
+            {
+                probes[i] = fieldTransform.GetChild(i);
+                probePositions[i] = probes[i].position;
+            }
+
+            Undo.RecordObject(fieldTransform, "Fit Probe Field To Scene");
+            Undo.RecordObjects(probes, "Fit Probe Field To Scene");
+            fieldTransform.position = sceneBounds.center;
+            // the children are already-generated probes; moving the parent would carry them off the spots they were placed for
+            for (int i = 0; i < probes.Length; i++) probes[i].position = probePositions[i];
+
+            serializedObject.Update();
+            serializedObject.FindProperty("size").vector3Value = sceneBounds.size;
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }
