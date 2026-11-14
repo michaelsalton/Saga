@@ -30,8 +30,10 @@ CBUFFER_START(UnityPerMaterial)
     float _POM;
     float _POMDepth;
     float _POMSteps;
+    float _POMMinSteps;
     float _POMMin;
     float _POMMax;
+    float _POMShadowHardness;
 
     // a shader built on Standard's passes appends its own per-material values here, so every pass agrees on the layout
 #ifdef SAGA_EXTRA_MATERIAL_PROPERTIES
@@ -75,5 +77,10 @@ void SagaAlphaClip(float2 uv)
     clip(alpha - half(_Cutoff));
 #endif
 }
+
+// a shader built on Standard's passes swaps what clips here; every pass calls it so depth and shadows cut out the same holes
+#ifndef SAGA_ALPHA_CLIP
+#define SAGA_ALPHA_CLIP(uv) SagaAlphaClip(uv)
+#endif
 
 #endif

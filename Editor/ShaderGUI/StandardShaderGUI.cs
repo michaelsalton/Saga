@@ -136,8 +136,22 @@ namespace Saga.Rendering.Editor
             materialEditor.TexturePropertySingleLine(new GUIContent("Height Map"), FindProperty("_HeightMap", properties));
             DrawProperty("_POMDepth");
             DrawProperty("_POMSteps");
+            DrawProperty("_POMMinSteps");
             DrawProperty("_POMMin");
             DrawProperty("_POMMax");
+            MaterialProperty worldUV = FindProperty("_WorldUV", properties);
+            // triplanar uv has no edges to clip against
+            using (new EditorGUI.DisabledScope(worldUV.floatValue > 0.5f && !worldUV.hasMixedValue))
+            {
+                DrawProperty("_POMSilhouette");
+                DrawProperty("_POMShadow");
+                if (IsEnabled("_POMShadow"))
+                {
+                    EditorGUI.indentLevel++;
+                    DrawProperty("_POMShadowHardness");
+                    EditorGUI.indentLevel--;
+                }
+            }
             EditorGUI.indentLevel--;
         }
 
@@ -184,6 +198,18 @@ namespace Saga.Rendering.Editor
                 material.EnableKeyword("_DETAIL");
             else
                 material.DisableKeyword("_DETAIL");
+
+            // one keyword gated here, so the depth passes don't also need _POM_ON and _WORLD_UV variants
+            bool meshPOM = material.IsKeywordEnabled("_POM_ON") && !material.IsKeywordEnabled("_WORLD_UV");
+            if (meshPOM && material.GetFloat("_POMSilhouette") > 0.5f)
+                material.EnableKeyword("_POM_SILHOUETTE");
+            else
+                material.DisableKeyword("_POM_SILHOUETTE");
+            // triplanar would need a shadow march per projection, up to three more loops per pixel
+            if (meshPOM && material.GetFloat("_POMShadow") > 0.5f)
+                material.EnableKeyword("_POM_SELF_SHADOW");
+            else
+                material.DisableKeyword("_POM_SELF_SHADOW");
 
             // URP's shadow-map pass skips any material whose ShadowCaster pass is disabled
             material.SetShaderPassEnabled("ShadowCaster", material.GetFloat("_CastShadows") > 0.5f);

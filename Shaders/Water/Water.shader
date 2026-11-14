@@ -107,7 +107,6 @@ Shader "Saga/Water"
             #include "Packages/com.saltbox.saga/Shaders/Water/WaterReflection.hlsl" // PLanar reflection + Fresnel
             #include "Packages/com.saltbox.saga/Shaders/Water/WaterSpecular.hlsl" // Thresholded Blinn-Phong sun glint
             #include "Packages/com.saltbox.saga/Shaders/Water/WaterFoam.hlsl" // Waterline foam from a depth-buffer proximity search
-            #include "Packages/com.saltbox.saga/ShaderLibrary/CloudShadows.hlsl" // Global cloud shadow mask
 
             struct Attributes
             {
@@ -221,12 +220,10 @@ Shader "Saga/Water"
                 SagaRefractionResult refraction =
                     SagaCalculateRefraction(screenUV, IN.positionsHCS.z, IN.positionWS.y, finalNormal);
 
-                half cloudSurf  = SagaCloudShadow(IN.positionWS);
-                half cloudFloor = SagaCloudShadow(refraction.floorWS);
-                half3 waterColor = SagaWaterDepthColor(refraction.columnDepthAtUV) * cloudSurf;
+                half3 waterColor = SagaWaterDepthColor(refraction.columnDepthAtUV);
                 half3 color = lerp(refraction.color, waterColor, _WaterOpacity);
 
-                color += SagaCaustics(refraction.floorWS, refraction.columnDepthAtUV) * cloudFloor;
+                color += SagaCaustics(refraction.floorWS, refraction.columnDepthAtUV);
 
                 float reflectionWeight;
                 half3 reflection = SagaWaterReflection(screenUV, finalNormal,
@@ -234,10 +231,10 @@ Shader "Saga/Water"
                 color = lerp(color, reflection,
                              SagaWaterFresnel(finalNormal, IN.positionWS) * reflectionWeight);
 
-                color += SagaWaterSpecular(finalNormal, IN.positionWS) * cloudSurf;
+                color += SagaWaterSpecular(finalNormal, IN.positionWS);
 
                 half foam = SagaWaterFoam(screenUV, IN.positionWS, IN.restPositionWS);
-                color = lerp(color, _FoamColor.rgb * cloudSurf, foam * _FoamOpacity);
+                color = lerp(color, _FoamColor.rgb, foam * _FoamOpacity);
 
                 return half4(color, 1.0);
             }

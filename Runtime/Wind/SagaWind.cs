@@ -11,8 +11,7 @@ namespace Saga.Rendering
     [DisallowMultipleComponent]
     public class SagaWind : MonoBehaviour
     {
-        [Tooltip("Direction the wind blows toward, as a compass angle in world XZ (degrees). " +
-                 "Same convention as Cloud Shadows, so matching angles make clouds drift with the bend.")]
+        [Tooltip("Direction the wind blows toward, as a compass angle in world XZ (degrees).")]
         [Range(0f, 360f)]
         [SerializeField] float windAngle = 45f;
 

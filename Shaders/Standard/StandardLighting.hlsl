@@ -5,7 +5,6 @@
 #include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
 
 #include "Packages/com.saltbox.saga/ShaderLibrary/PBR.hlsl"
-#include "Packages/com.saltbox.saga/ShaderLibrary/CloudShadows.hlsl"
 
 half3 SagaDirectBRDF(half3 N, half3 V, Light light, half3 diffuseAlbedo, half3 f0, float alpha, half3 energyCompensation)
 {
@@ -26,11 +25,14 @@ half3 SagaDirectBRDF(half3 N, half3 V, Light light, half3 diffuseAlbedo, half3 f
     return (diffuseAlbedo + specular) * radiance;
 }
 
-half3 SagaStandardLighting(InputData inputData, half3 geometricNormalWS, half3 albedo, half metallic, half perceptualRoughness, half ao)
+half3 SagaStandardLighting(InputData inputData, half3 geometricNormalWS, half3 albedo, half metallic, half perceptualRoughness, half ao, half parallaxShadow)
 {
     half3 N = inputData.normalWS;
     half3 V = inputData.viewDirectionWS;
     half NdotV = max(dot(N, V), 1e-4h);
+
+    // indirect only: SSAO estimates blocked sky, so a sunlit crease stays lit; min with the ORM's AO since both see the same crevices
+    ao = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, ao).indirectAmbientOcclusion;
 
     half3 diffuseAlbedo = albedo * (1.0h - SAGA_DIELECTRIC_F0) * (1.0h - metallic);
     half3 f0 = lerp((half3)SAGA_DIELECTRIC_F0, albedo, metallic);
@@ -46,8 +48,8 @@ half3 SagaStandardLighting(InputData inputData, half3 geometricNormalWS, half3 a
     #endif
 
     Light main = GetMainLight(inputData.shadowCoord, inputData.positionWS, inputData.shadowMask);
-    // clouds gobo the same sun the shadow map does
-    main.shadowAttenuation = min(main.shadowAttenuation, SagaCloudShadow(inputData.positionWS));
+    // min, not multiply: the shadow map and the height field both block the same sun, so overlap shouldn't darken twice
+    main.shadowAttenuation = min(main.shadowAttenuation, parallaxShadow);
     half3 col = SagaDirectBRDF(N, V, main, diffuseAlbedo, f0, alpha, energyCompensation);
 
 #if defined(_ADDITIONAL_LIGHTS)
@@ -77,6 +79,12 @@ half3 SagaStandardLighting(InputData inputData, half3 geometricNormalWS, half3 a
     col += environment * specularAlbedo;
 
     return col;
+}
+
+// Grass calls the six-argument form directly and has no height field to shadow
+half3 SagaStandardLighting(InputData inputData, half3 geometricNormalWS, half3 albedo, half metallic, half perceptualRoughness, half ao)
+{
+    return SagaStandardLighting(inputData, geometricNormalWS, albedo, metallic, perceptualRoughness, ao, 1.0h);
 }
 
 #endif

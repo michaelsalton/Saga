@@ -37,7 +37,6 @@ Shader "Saga/Outline"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
             #include "Packages/com.saltbox.saga/ShaderLibrary/Depth.hlsl"
             #include "Packages/com.saltbox.saga/ShaderLibrary/CameraBasis.hlsl"
-            #include "Packages/com.saltbox.saga/ShaderLibrary/CloudShadows.hlsl"
 
             half4  _OutlineColor;     // line color (rgb) + opacity (a); e.g. (1,1,1,1) = opaque white line
             float  _DepthThreshold;   // world-unit depth gap (slope-aware) counting as a silhouette
@@ -117,7 +116,7 @@ Shader "Saga/Outline"
                 // No line here: bail before the world reconstruction and the shadow taps below, so the
                 // lighting costs only on the handful of texels that actually carry one. Safe under a
                 // branch -- nothing past this point takes a mip derivative (the shadow tap is a
-                // comparison sample, the cloud field is procedural noise).
+                // comparison sample).
                 if (edge <= 0.0)
                     return half4(0.0h, 0.0h, 0.0h, 0.0h);
 
@@ -137,14 +136,8 @@ Shader "Saga/Outline"
                     // feature exists to remove. shadowMask 1 / occlusionProbeChannels 0 = realtime
                     // only; a screen-space pass has no lightmap UVs, so baked shadows cannot reach
                     // here (see the tooltip on OutlineRenderFeature.Settings.lightingStrength).
-                    half sun   = MainLightShadow(TransformWorldToShadowCoord(posWS), posWS,
-                                                 half4(1.0h, 1.0h, 1.0h, 1.0h), half4(0.0h, 0.0h, 0.0h, 0.0h));
-                    half cloud = SagaCloudShadow(posWS);
-
-                    // min, not multiply -- StandardLighting.hlsl:58-67. The cloud occludes the SAME sun
-                    // as the shadow map, so stacking them would darken cloud-over-shadow twice and the
-                    // cloud pattern would read as muddy detail inside cast shadows.
-                    half shadow = min(sun, cloud);
+                    half shadow = MainLightShadow(TransformWorldToShadowCoord(posWS), posWS,
+                                                  half4(1.0h, 1.0h, 1.0h, 1.0h), half4(0.0h, 0.0h, 0.0h, 0.0h));
 
                     // Left SMOOTH on purpose. At _BandShadow 0, SagaCelBand returns band * occ, so the
                     // surface's own response to occlusion is LINEAR and only the present blit's

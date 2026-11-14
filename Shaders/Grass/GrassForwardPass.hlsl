@@ -23,8 +23,7 @@ GrassVaryings GrassVert(uint vertexID : SV_VertexID, uint instanceID : SV_Instan
 half3 GrassTransmission(InputData inputData, half3 bladeNormalWS, half3 albedo)
 {
     Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, inputData.shadowMask);
-    // same sun gobo the reflected light gets in SagaStandardLighting
-    half shadow = min(mainLight.shadowAttenuation, SagaCloudShadow(inputData.positionWS));
+    half shadow = mainLight.shadowAttenuation;
     // Lambert for light striking the far side of the sheet and diffusing out through ours
     half backLambert = saturate(dot(-bladeNormalWS, mainLight.direction));
     // light passing through keeps heading roughly along its own direction, so it's brightest looking into the sun

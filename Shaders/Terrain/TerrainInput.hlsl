@@ -1,101 +1,93 @@
 #ifndef SAGA_TERRAIN_INPUT_INCLUDED
 #define SAGA_TERRAIN_INPUT_INCLUDED
 
-// must exist before Standard's input is included, since the macro is expanded inside its UnityPerMaterial
-#define SAGA_EXTRA_MATERIAL_PROPERTIES \
-    float4 _SandTint; float _SandNormalScale; float _SandMetresPerTile; \
-    float4 _GrassTint; float _GrassNormalScale; float _GrassMetresPerTile; \
-    float4 _RockTint; float _RockNormalScale; float _RockMetresPerTile; \
-    float4 _SeabedTint; float _SeabedNormalScale; float _SeabedMetresPerTile; \
-    float _HeightBlendDepth;
+// all three must exist before Standard's input and passes are included, since the macros are expanded inside them
+#define SAGA_MODIFY_POSITION_WS(positionWS, IN) SagaTerrainPlaceVertex(positionWS, IN.positionOS, IN.normalOS, IN.uv)
+#define SAGA_ALPHA_CLIP(uv) SagaTerrainClipHoles(uv)
+// IN is Standard's Frag input, picked up by name; every SagaSurface field is overwritten so Standard's own sampling is dead code
+#define SAGA_MODIFY_SURFACE(surf, positionWS) surf = SagaSampleTerrainSurface(IN.uv, normalize(IN.normalWS))
 
-#include "Packages/com.saltbox.saga/Shaders/Standard/StandardLighting.hlsl"
+#include "Packages/com.saltbox.saga/Shaders/Standard/StandardInput.hlsl"
 
-// sixteen textures would blow DX11's limit of 16 samplers, so every layer samples through the sand albedo's sampler
-TEXTURE2D(_SandBaseMap);
-SAMPLER(sampler_SandBaseMap);
-TEXTURE2D(_SandNormalMap);
-TEXTURE2D(_SandORMMap);
-TEXTURE2D(_SandHeightMap);
+// written per terrain by the engine at draw time, kept out of UnityPerMaterial as URP TerrainLit does
+CBUFFER_START(_Terrain)
+    half _NormalScale0, _NormalScale1, _NormalScale2, _NormalScale3;
+    half _Metallic0, _Metallic1, _Metallic2, _Metallic3;
+    half _Smoothness0, _Smoothness1, _Smoothness2, _Smoothness3;
+    half4 _DiffuseRemapScale0, _DiffuseRemapScale1, _DiffuseRemapScale2, _DiffuseRemapScale3;
+    half4 _MaskMapRemapOffset0, _MaskMapRemapOffset1, _MaskMapRemapOffset2, _MaskMapRemapOffset3;
+    half4 _MaskMapRemapScale0, _MaskMapRemapScale1, _MaskMapRemapScale2, _MaskMapRemapScale3;
+    half _LayerHasMask0, _LayerHasMask1, _LayerHasMask2, _LayerHasMask3;
+    float4 _Splat0_ST, _Splat1_ST, _Splat2_ST, _Splat3_ST;
+    float4 _Control_TexelSize;
+#ifdef UNITY_INSTANCING_ENABLED
+    float4 _TerrainHeightmapRecipSize;
+#endif
+    float4 _TerrainHeightmapScale;
+CBUFFER_END
 
-TEXTURE2D(_GrassBaseMap);
-TEXTURE2D(_GrassNormalMap);
-TEXTURE2D(_GrassORMMap);
-TEXTURE2D(_GrassHeightMap);
+TEXTURE2D(_Control);
+SAMPLER(sampler_Control);
 
-TEXTURE2D(_RockBaseMap);
-TEXTURE2D(_RockNormalMap);
-TEXTURE2D(_RockORMMap);
-TEXTURE2D(_RockHeightMap);
+// one sampler per texture kind; twelve layer samplers would blow the 16-sampler limit
+TEXTURE2D(_Splat0);
+SAMPLER(sampler_Splat0);
+TEXTURE2D(_Splat1);
+TEXTURE2D(_Splat2);
+TEXTURE2D(_Splat3);
 
-TEXTURE2D(_SeabedBaseMap);
-TEXTURE2D(_SeabedNormalMap);
-TEXTURE2D(_SeabedORMMap);
-TEXTURE2D(_SeabedHeightMap);
+TEXTURE2D(_Normal0);
+SAMPLER(sampler_Normal0);
+TEXTURE2D(_Normal1);
+TEXTURE2D(_Normal2);
+TEXTURE2D(_Normal3);
 
-#define SAGA_TERRAIN_SAMPLER sampler_SandBaseMap
+TEXTURE2D(_Mask0);
+SAMPLER(sampler_Mask0);
+TEXTURE2D(_Mask1);
+TEXTURE2D(_Mask2);
+TEXTURE2D(_Mask3);
 
-struct SagaTerrainLayer
+#ifdef UNITY_INSTANCING_ENABLED
+TYPED_TEXTURE2D(float4, _TerrainHeightmapTexture);
+TEXTURE2D(_TerrainNormalmapTexture);
+#endif
+
+UNITY_INSTANCING_BUFFER_START(Terrain)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _TerrainPatchInstanceData)
+UNITY_INSTANCING_BUFFER_END(Terrain)
+
+#ifdef _ALPHATEST_ON
+TEXTURE2D(_TerrainHolesTexture);
+SAMPLER(sampler_TerrainHolesTexture);
+#endif
+
+void SagaTerrainClipHoles(float2 terrainUV)
 {
-    half3 albedo;
-    half3 normalWS;
-    half3 orm;
-};
-
-// every sample here takes explicit gradients: these run inside per-pixel branches, and a neighbour in the 2x2 quad that skipped the branch would corrupt the implicit mip selection
-
-// planar from above: world x/z are the uvs, so flat ground never stretches and slopes stretch with their steepness
-SagaTerrainLayer SagaTerrainTopDown(TEXTURE2D_PARAM(baseMap, baseSampler), TEXTURE2D_PARAM(normalMap, normalSampler), TEXTURE2D_PARAM(ormMap, ormSampler),
-                                    float2 uv, float2 uvDdx, float2 uvDdy, half3 tint, half normalScale, half3 geometricNormalWS)
-{
-    SagaTerrainLayer layer;
-    layer.albedo = SAMPLE_TEXTURE2D_GRAD(baseMap, baseSampler, uv, uvDdx, uvDdy).rgb * tint;
-    layer.orm = SAMPLE_TEXTURE2D_GRAD(ormMap, ormSampler, uv, uvDdx, uvDdy).rgb;
-    half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(normalMap, normalSampler, uv, uvDdx, uvDdy), normalScale);
-    // whiteout blend: the texture's x/y tilt the surface along world x/z, and its z scales the geometric normal's up
-    layer.normalWS = normalize(half3(normalTS.x + geometricNormalWS.x, abs(normalTS.z) * geometricNormalWS.y, normalTS.y + geometricNormalWS.z));
-    return layer;
+#ifdef _ALPHATEST_ON
+    half hole = SAMPLE_TEXTURE2D(_TerrainHolesTexture, sampler_TerrainHolesTexture, terrainUV).r;
+    // compressed hole maps store "0" as roughly 1/2047
+    clip(hole < 0.0005h ? -1.0h : 1.0h);
+#endif
 }
 
-// one planar projection per world axis, weighted by how squarely the surface faces it, so cliffs get a side-on projection instead of vertical streaks
-SagaTerrainLayer SagaTerrainTriplanar(TEXTURE2D_PARAM(baseMap, baseSampler), TEXTURE2D_PARAM(normalMap, normalSampler), TEXTURE2D_PARAM(ormMap, ormSampler),
-                                      float3 position, float3 positionDdx, float3 positionDdy, half3 axisWeights, half3 tint, half normalScale, half3 geometricNormalWS)
+// instanced terrain draws a flat grid patch many times; the heightmap supplies the real position, normal and uv
+void SagaTerrainPlaceVertex(inout float3 positionWS, inout float4 positionOS, inout float3 normalOS, inout float2 terrainUV)
 {
-    float2 uvX = position.zy;
-    float2 uvY = position.xz;
-    float2 uvZ = position.xy;
+#ifdef UNITY_INSTANCING_ENABLED
+    float4 patch = UNITY_ACCESS_INSTANCED_PROP(Terrain, _TerrainPatchInstanceData);
+    // patch.xy = where this patch starts in the heightmap, patch.z = texel stride for its lod
+    float2 heightmapTexel = (positionOS.xy + patch.xy) * patch.z;
+    float height = UnpackHeightmap(_TerrainHeightmapTexture.Load(int3(heightmapTexel, 0)));
 
-    SagaTerrainLayer layer;
-    layer.albedo = (SAMPLE_TEXTURE2D_GRAD(baseMap, baseSampler, uvX, positionDdx.zy, positionDdy.zy).rgb * axisWeights.x
-                  + SAMPLE_TEXTURE2D_GRAD(baseMap, baseSampler, uvY, positionDdx.xz, positionDdy.xz).rgb * axisWeights.y
-                  + SAMPLE_TEXTURE2D_GRAD(baseMap, baseSampler, uvZ, positionDdx.xy, positionDdy.xy).rgb * axisWeights.z) * tint;
-    layer.orm = SAMPLE_TEXTURE2D_GRAD(ormMap, ormSampler, uvX, positionDdx.zy, positionDdy.zy).rgb * axisWeights.x
-              + SAMPLE_TEXTURE2D_GRAD(ormMap, ormSampler, uvY, positionDdx.xz, positionDdy.xz).rgb * axisWeights.y
-              + SAMPLE_TEXTURE2D_GRAD(ormMap, ormSampler, uvZ, positionDdx.xy, positionDdy.xy).rgb * axisWeights.z;
+    positionOS.xz = heightmapTexel * _TerrainHeightmapScale.xz;
+    positionOS.y = height * _TerrainHeightmapScale.y;
+    normalOS = _TerrainNormalmapTexture.Load(int3(heightmapTexel, 0)).rgb * 2.0 - 1.0;
+    terrainUV = heightmapTexel * _TerrainHeightmapRecipSize.zw;
 
-    half3 normalX = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(normalMap, normalSampler, uvX, positionDdx.zy, positionDdy.zy), normalScale);
-    half3 normalY = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(normalMap, normalSampler, uvY, positionDdx.xz, positionDdy.xz), normalScale);
-    half3 normalZ = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(normalMap, normalSampler, uvZ, positionDdx.xy, positionDdy.xy), normalScale);
-    // whiteout per projection, then each swizzled back from its plane's axes into world axes, as in Standard's triplanar
-    normalX = half3(normalX.xy + geometricNormalWS.zy, abs(normalX.z) * geometricNormalWS.x);
-    normalY = half3(normalY.xy + geometricNormalWS.xz, abs(normalY.z) * geometricNormalWS.y);
-    normalZ = half3(normalZ.xy + geometricNormalWS.xy, abs(normalZ.z) * geometricNormalWS.z);
-    layer.normalWS = normalize(normalX.zyx * axisWeights.x + normalY.xzy * axisWeights.y + normalZ.xyz * axisWeights.z);
-    return layer;
-}
-
-half SagaTerrainTriplanarHeight(TEXTURE2D_PARAM(heightMap, heightSampler), float3 position, float3 positionDdx, float3 positionDdy, half3 axisWeights)
-{
-    return SAMPLE_TEXTURE2D_GRAD(heightMap, heightSampler, position.zy, positionDdx.zy, positionDdy.zy).r * axisWeights.x
-         + SAMPLE_TEXTURE2D_GRAD(heightMap, heightSampler, position.xz, positionDdx.xz, positionDdy.xz).r * axisWeights.y
-         + SAMPLE_TEXTURE2D_GRAD(heightMap, heightSampler, position.xy, positionDdx.xy, positionDdy.xy).r * axisWeights.z;
-}
-
-void SagaTerrainAccumulate(inout SagaTerrainLayer total, SagaTerrainLayer layer, half weight)
-{
-    total.albedo += layer.albedo * weight;
-    total.normalWS += layer.normalWS * weight;
-    total.orm += layer.orm * weight;
+    // Standard already transformed the patch-local position; redo it with the heightmap one
+    positionWS = TransformObjectToWorld(positionOS.xyz);
+#endif
 }
 
 #endif

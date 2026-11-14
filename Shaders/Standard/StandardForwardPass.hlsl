@@ -18,9 +18,12 @@
 #pragma multi_compile_fragment _ LIGHTMAP_BICUBIC_SAMPLING
 #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
 #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
 
 #pragma shader_feature_local_fragment _WORLD_UV
 #pragma shader_feature_local_fragment _POM_ON
+#pragma shader_feature_local_fragment _POM_SILHOUETTE
+#pragma shader_feature_local_fragment _POM_SELF_SHADOW
 #pragma shader_feature_local_fragment _EMISSION
 #pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
 #pragma shader_feature_local_fragment _SURFACE_TYPE_TRANSPARENT
@@ -99,16 +102,17 @@ Varyings Vert(Attributes IN)
     return OUT;
 }
 
-half4 Frag(Varyings IN) : SV_TARGET
+half4 Frag(Varyings IN, FRONT_FACE_TYPE frontFace : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(IN.positionWS);
 
-    SagaAlphaClip(IN.uv);
+    SAGA_ALPHA_CLIP(IN.uv);
     
-    SagaSurface surf = SagaSampleSurface(IN.uv, IN.positionWS, IN.normalWS, IN.tangentWS, viewDirWS);
+    half faceSign = IS_FRONT_VFACE(frontFace, 1.0h, -1.0h);
+    SagaSurface surf = SagaSampleSurface(IN.uv, IN.positionWS, IN.normalWS, IN.tangentWS, viewDirWS, faceSign);
 
     SAGA_MODIFY_SURFACE(surf, IN.positionWS);
 
@@ -138,7 +142,7 @@ half4 Frag(Varyings IN) : SV_TARGET
 
     // interpolation shortens unit normals, which would weaken the horizon fade
     half3 geometricNormalWS = normalize(IN.normalWS);
-    half3 col = SAGA_LIGHTING(inputData, geometricNormalWS, surf.albedo, surf.metallic, surf.roughness, surf.ao);
+    half3 col = SAGA_LIGHTING(inputData, geometricNormalWS, surf.albedo, surf.metallic, surf.roughness, surf.ao, surf.parallaxShadow);
 
     col += surf.emissive;
 

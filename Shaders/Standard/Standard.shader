@@ -17,11 +17,11 @@ Shader "Saga/Standard"
         [MainColor] _BaseColor ("Base Color", Color) = (1.0, 1.0, 1.0, 1)
 
         [Normal] _NormalMap ("Normal Map", 2D) = "bump" {}
-        _NormalScale ("Normal Scale", Range(0, 8)) = 1
+        _NormalScale ("Normal Scale", Range(0, 10)) = 1
         [NoScaleOffset] _ORMMap ("ORM (R=AO G=Rough B=Metal)", 2D) = "white" {}
         _Roughness ("Roughness",  Range(0, 1)) = 0.5
         _Metallic ("Metallic",   Range(0, 1)) = 0
-        _OcclusionStrength ("Occlusion Strength", Range(0, 1)) = 1
+        _OcclusionStrength ("Occlusion Strength", Range(0, 10)) = 1
 
         [ToggleOff(_SPECULAR_AA_OFF)] _SpecularAA ("Specular Anti-Aliasing", Float) = 1
         [ToggleOff(_MULTISCATTER_OFF)] _MultiScatter ("Multiple Scattering Compensation", Float) = 1
@@ -41,9 +41,13 @@ Shader "Saga/Standard"
         [Toggle(_POM_ON)] _POM ("Parallax Occlusion Mapping", Float) = 0
         [NoScaleOffset] _HeightMap ("Height Map (R)", 2D) = "white" {}
         _POMDepth ("POM Depth (m under World UV, else UV)", Range(0, 0.3)) = 0
-        [IntRange] _POMSteps ("March Steps", Range(0, 32)) = 0
+        [IntRange] _POMSteps ("March Steps (Grazing)", Range(1, 64)) = 16
+        [IntRange] _POMMinSteps ("March Steps (Head-On)", Range(1, 64)) = 4
         _POMMin ("Height Remap Min", Range(0, 1)) = 0
-        _POMMax ("Height Remap Max", Range(0, 1)) = 0
+        _POMMax ("Height Remap Max", Range(0, 1)) = 1
+        [ToggleUI] _POMSilhouette ("Silhouette Clipping (mesh UV 0-1 only)", Float) = 0
+        [ToggleUI] _POMShadow ("Self-Shadowing (main light, mesh UV only)", Float) = 0
+        _POMShadowHardness ("Shadow Hardness", Range(1, 50)) = 8
 
         [ToggleOff] _EnvironmentReflections ("Environment Reflections", Float) = 1
 

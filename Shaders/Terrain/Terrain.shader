@@ -2,59 +2,53 @@ Shader "Saga/Terrain"
 {
     Properties
     {
-        [Header(Sand  vertex colour R)]
-        _SandTint ("Tint", Color) = (0.76, 0.69, 0.52, 1)
-        [NoScaleOffset] _SandBaseMap ("Albedo", 2D) = "white" {}
-        [Normal][NoScaleOffset] _SandNormalMap ("Normal", 2D) = "bump" {}
-        _SandNormalScale ("Normal Scale", Range(0, 4)) = 1
-        [NoScaleOffset] _SandORMMap ("ORM (R=AO G=Rough)", 2D) = "white" {}
-        [NoScaleOffset] _SandHeightMap ("Height (R)", 2D) = "gray" {}
-        _SandMetresPerTile ("Metres Per Texture Repeat", Range(0.25, 32)) = 4
+        // filled by the terrain engine by name; declared so unset slots get sane defaults (red control = all layer 0)
+        [HideInInspector] _Control ("Control (RGBA)", 2D) = "red" {}
+        [HideInInspector] _Splat0 ("Layer 0 (R)", 2D) = "grey" {}
+        [HideInInspector] _Splat1 ("Layer 1 (G)", 2D) = "grey" {}
+        [HideInInspector] _Splat2 ("Layer 2 (B)", 2D) = "grey" {}
+        [HideInInspector] _Splat3 ("Layer 3 (A)", 2D) = "grey" {}
+        [HideInInspector] _Normal0 ("Normal 0", 2D) = "bump" {}
+        [HideInInspector] _Normal1 ("Normal 1", 2D) = "bump" {}
+        [HideInInspector] _Normal2 ("Normal 2", 2D) = "bump" {}
+        [HideInInspector] _Normal3 ("Normal 3", 2D) = "bump" {}
+        [HideInInspector] _Mask0 ("Mask 0", 2D) = "grey" {}
+        [HideInInspector] _Mask1 ("Mask 1", 2D) = "grey" {}
+        [HideInInspector] _Mask2 ("Mask 2", 2D) = "grey" {}
+        [HideInInspector] _Mask3 ("Mask 3", 2D) = "grey" {}
+        [HideInInspector][Gamma] _Metallic0 ("Metallic 0", Range(0, 1)) = 0
+        [HideInInspector][Gamma] _Metallic1 ("Metallic 1", Range(0, 1)) = 0
+        [HideInInspector][Gamma] _Metallic2 ("Metallic 2", Range(0, 1)) = 0
+        [HideInInspector][Gamma] _Metallic3 ("Metallic 3", Range(0, 1)) = 0
+        [HideInInspector] _Smoothness0 ("Smoothness 0", Range(0, 1)) = 0.5
+        [HideInInspector] _Smoothness1 ("Smoothness 1", Range(0, 1)) = 0.5
+        [HideInInspector] _Smoothness2 ("Smoothness 2", Range(0, 1)) = 0.5
+        [HideInInspector] _Smoothness3 ("Smoothness 3", Range(0, 1)) = 0.5
+        [HideInInspector] _TerrainHolesTexture ("Holes Map", 2D) = "white" {}
 
-        [Header(Grass  vertex colour G)]
-        _GrassTint ("Tint", Color) = (0.32, 0.45, 0.2, 1)
-        [NoScaleOffset] _GrassBaseMap ("Albedo", 2D) = "white" {}
-        [Normal][NoScaleOffset] _GrassNormalMap ("Normal", 2D) = "bump" {}
-        _GrassNormalScale ("Normal Scale", Range(0, 4)) = 1
-        [NoScaleOffset] _GrassORMMap ("ORM (R=AO G=Rough)", 2D) = "white" {}
-        [NoScaleOffset] _GrassHeightMap ("Height (R)", 2D) = "gray" {}
-        _GrassMetresPerTile ("Metres Per Texture Repeat", Range(0.25, 32)) = 4
+        // Standard's passes run every uv through TRANSFORM_TEX(uv, _BaseMap); undeclared, its tiling would be zero
+        [HideInInspector] _BaseMap ("Base Map", 2D) = "white" {}
+        [HideInInspector] _BaseColor ("Base Color", Color) = (1, 1, 1, 1)
 
-        [Header(Rock  vertex colour B  triplanar)]
-        _RockTint ("Tint", Color) = (0.45, 0.43, 0.4, 1)
-        [NoScaleOffset] _RockBaseMap ("Albedo", 2D) = "white" {}
-        [Normal][NoScaleOffset] _RockNormalMap ("Normal", 2D) = "bump" {}
-        _RockNormalScale ("Normal Scale", Range(0, 4)) = 1
-        [NoScaleOffset] _RockORMMap ("ORM (R=AO G=Rough)", 2D) = "white" {}
-        [NoScaleOffset] _RockHeightMap ("Height (R)", 2D) = "gray" {}
-        _RockMetresPerTile ("Metres Per Texture Repeat", Range(0.25, 32)) = 6
-
-        [Header(Seabed  vertex colour A)]
-        _SeabedTint ("Tint", Color) = (0.55, 0.5, 0.4, 1)
-        [NoScaleOffset] _SeabedBaseMap ("Albedo", 2D) = "white" {}
-        [Normal][NoScaleOffset] _SeabedNormalMap ("Normal", 2D) = "bump" {}
-        _SeabedNormalScale ("Normal Scale", Range(0, 4)) = 1
-        [NoScaleOffset] _SeabedORMMap ("ORM (R=AO G=Rough)", 2D) = "white" {}
-        [NoScaleOffset] _SeabedHeightMap ("Height (R)", 2D) = "gray" {}
-        _SeabedMetresPerTile ("Metres Per Texture Repeat", Range(0.25, 32)) = 4
-
-        [Header(Blending)]
-        _HeightBlendDepth ("Height Blend Depth", Range(0.01, 1)) = 0.2
-        _TriplanarSharpness ("Rock Triplanar Sharpness", Range(1, 16)) = 4
-        _Roughness ("Roughness", Range(0, 1)) = 1
-        _OcclusionStrength ("Occlusion Strength", Range(0, 1)) = 1
+        // basemap slot the engine expects to exist
+        [HideInInspector] _MainTex ("BaseMap (RGB)", 2D) = "grey" {}
     }
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
-        LOD 100
+        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "TerrainCompatible"="True" }
 
-        // every pass includes this first, so they all see the same UnityPerMaterial layout and the SRP Batcher accepts the shader
+        // Standard's passes, with the heightmap placed through SAGA_MODIFY_POSITION_WS, the splat blend through
+        // SAGA_MODIFY_SURFACE, and terrain holes through SAGA_ALPHA_CLIP.
         HLSLINCLUDE
+        // patches share the terrain's one matrix and one lightmap; height comes from the heightmap texture
+        #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
         #include "Packages/com.saltbox.saga/Shaders/Terrain/TerrainInput.hlsl"
         ENDHLSL
 
+        // --------------------------------------------------------------
+        // Forward lit
+        // --------------------------------------------------------------
         Pass
         {
             Name "ForwardLit"
@@ -65,13 +59,17 @@ Shader "Saga/Terrain"
             Cull Back
 
             HLSLPROGRAM
-            #pragma vertex TerrainVert
-            #pragma fragment TerrainFrag
-            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Terrain/TerrainForwardPass.hlsl"
+            #pragma vertex Vert
+            #pragma fragment Frag
+            // SagaSampleTerrainSurface must be compiled before Frag, which expands SAGA_MODIFY_SURFACE
+            #include "Packages/com.saltbox.saga/Shaders/Terrain/TerrainSurface.hlsl"
+            #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardForwardPass.hlsl"
             ENDHLSL
         }
 
-        // Standard's geometry passes as they are: they only read position and normal, and never clip since alpha test is off
+        // --------------------------------------------------------------
+        // Shadow caster
+        // --------------------------------------------------------------
         Pass
         {
             Name "ShadowCaster"
@@ -89,6 +87,9 @@ Shader "Saga/Terrain"
             ENDHLSL
         }
 
+        // --------------------------------------------------------------
+        // DepthOnly
+        // --------------------------------------------------------------
         Pass
         {
             Name "DepthOnly"
@@ -106,6 +107,9 @@ Shader "Saga/Terrain"
             ENDHLSL
         }
 
+        // --------------------------------------------------------------
+        // DepthNormals
+        // --------------------------------------------------------------
         Pass
         {
             Name "DepthNormals"
@@ -121,6 +125,9 @@ Shader "Saga/Terrain"
             #include_with_pragmas "Packages/com.saltbox.saga/Shaders/Standard/StandardDepthNormalsPass.hlsl"
             ENDHLSL
         }
+
+        // scene-view click selection on the terrain
+        UsePass "Hidden/Nature/Terrain/Utilities/PICKING"
     }
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
 }

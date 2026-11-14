@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: VICE_MI_Glass_Transparent
   m_Shader: {fileID: 4800000, guid: 9359b2a2bcd488b458611feca438022e, type: 3}
-  m_Parent: {fileID: 2100000, guid: 95782c4e1bc586744963f07dfca630e1, type: 2}
+  m_Parent: {fileID: 2100000, guid: 616c9a3814390fa4fad020081ed2ed03, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _SURFACE_TYPE_TRANSPARENT
@@ -40,9 +40,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _DstBlend: 10
-    - _NormalScale: 0.05
+    - _NormalScale: 0
     - _OcclusionStrength: 1
-    - _Roughness: 0.05
+    - _Roughness: 0
     - _Surface: 1
     - _ZWrite: 0
     m_Colors: []

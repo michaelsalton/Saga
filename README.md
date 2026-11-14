@@ -1,6 +1,6 @@
 # Saga
 
-Saga is a custom physically based rendering library for Unity's Universal Render Pipeline (URP 17). It replaces URP's Lit shader with its own PBR shading model and adds a small set of renderer features and components on top: outlines, water, and cloud shadows. Each system is an independent, tunable component.
+Saga is a custom physically based rendering library for Unity's Universal Render Pipeline (URP 17). It replaces URP's Lit shader with its own PBR shading model and adds a small set of renderer features and components on top: outlines and water. Each system is an independent, tunable component.
 
 ## Standard shader
 
@@ -17,10 +17,6 @@ A screen-space outline renderer feature detects edges from both the depth and no
 Water is the most developed system in the library. The surface is a tiled, tessellated grid mesh with animated vertex waves, and depth-based coloring that blends from shallow to deep tones. Refraction distorts the scene beneath the surface and fades out near edges and with depth to avoid artifacts at the shoreline. Animated underwater caustics are projected onto submerged geometry, with controls for warp, sharpness, wavelength, and how quickly they fade with depth.
 
 Reflections come from a dedicated planar reflection camera. It uses an oblique clip plane at an automatically detected water level and renders through a separate lightweight renderer, so reflections don't inherit post-processing. Reflections fade and blur with distance and fall back to a sky color far from the camera. Shoreline and intersection foam is driven by foam caster and mask components, with noise-broken edges. The surface also adds sun specular, Fresnel, and animated sparkles. A small floater component lets props drift around a patch of water and bob on the swell.
-
-## Cloud shadows
-
-A cloud shadow volume projects soft, wind-driven cloud shadows across the world. You can adjust scale, coverage, and edge softness, with optional stepping. The Standard shader folds the cloud mask into the main light's shadow attenuation, so clouds darken the same sun the shadow map does.
 
 ## Optional low-resolution presentation
 

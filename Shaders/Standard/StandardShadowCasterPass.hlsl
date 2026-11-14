@@ -26,7 +26,8 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-float4 GetShadowPositionHClip(Attributes IN)
+// inout so uv rewritten by SAGA_MODIFY_POSITION_WS reaches ShadowVert
+float4 GetShadowPositionHClip(inout Attributes IN)
 {
     float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
     // before the bias, which pushes along the normal from wherever the vertex ends up
@@ -61,7 +62,7 @@ Varyings ShadowVert(Attributes IN)
 
 half4 ShadowFrag(Varyings IN) : SV_TARGET
 {
-    SagaAlphaClip(IN.uv);
+    SAGA_ALPHA_CLIP(IN.uv);
     return 0;
 }
 

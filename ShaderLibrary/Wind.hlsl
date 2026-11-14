@@ -9,7 +9,7 @@ float2 _WindDirection;
 float _WindStrength;
 float _WindGustiness;
 float _WindGustScale;
-// metres the gust field has scrolled downwind, integrated in C# double like the cloud offset
+// metres the gust field has scrolled downwind, integrated in C# double so it doesn't lose precision over a long session
 float2 _WindGustOffset;
 // each layer's phase in cycles, integrated and wrapped separately in C#: x,y main sway, z branch
 float4 _WindPhases;

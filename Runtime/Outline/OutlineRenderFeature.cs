@@ -41,7 +41,7 @@ namespace Saga.Rendering
             [Header("Lighting")]
             [Tooltip("How far the line follows the shading of the surface it traces. 0 = flat line, the " +
                      "behavior before this existed. 1 = a fully shadowed surface gets a fully tinted line.\n\n" +
-                     "Reads the main light's shadow map and the cloud mask at the line's own texel, using " +
+                     "Reads the main light's shadow map at the line's own texel, using " +
                      "the same calls Saga/Standard makes, so the two cannot disagree. REALTIME shadows only — " +
                      "a screen-space pass has no lightmap UVs, so a light set to Baked will shade the " +
                      "surface but not its outline. Requires an orthographic camera; ignored otherwise.")]
